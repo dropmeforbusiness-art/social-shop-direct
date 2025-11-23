@@ -120,14 +120,8 @@ const Marketplace = () => {
               Drop.
             </h1>
             <nav className="flex gap-6">
-              <Button variant="ghost" onClick={() => navigate("/marketplace")}>
-                Buy
-              </Button>
               <Button variant="ghost" onClick={() => navigate("/")}>
                 Sell
-              </Button>
-              <Button variant="ghost" onClick={() => navigate("/admin/products")}>
-                Your Products
               </Button>
             </nav>
           </div>
