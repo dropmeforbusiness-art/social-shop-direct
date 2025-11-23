@@ -15,6 +15,8 @@ const productSchema = z.object({
   description: z.string().max(500, "Description too long").optional(),
   price: z.number().positive("Price must be positive").max(999999, "Price too high"),
   imageUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  sellerName: z.string().max(100, "Seller name too long").optional(),
+  sellerLocation: z.string().max(100, "Seller location too long").optional(),
   buyerName: z.string().max(100, "Buyer name too long").optional(),
   buyerPlace: z.string().max(100, "Buyer place too long").optional(),
 });
@@ -29,6 +31,8 @@ const Admin = () => {
     description: "",
     price: "",
     imageUrl: "",
+    sellerName: "",
+    sellerLocation: "",
     buyerName: "",
     buyerPlace: "",
   });
@@ -119,6 +123,8 @@ const Admin = () => {
         description: formData.description || undefined,
         price: parseFloat(formData.price),
         imageUrl: formData.imageUrl || undefined,
+        sellerName: formData.sellerName || undefined,
+        sellerLocation: formData.sellerLocation || undefined,
         buyerName: formData.buyerName || undefined,
         buyerPlace: formData.buyerPlace || undefined,
       });
@@ -131,6 +137,8 @@ const Admin = () => {
         description: validatedData.description,
         price: validatedData.price,
         image_url: validatedData.imageUrl,
+        seller_name: validatedData.sellerName,
+        seller_location: validatedData.sellerLocation,
         buyer_name: validatedData.buyerName,
         buyer_place: validatedData.buyerPlace,
       });
@@ -147,6 +155,8 @@ const Admin = () => {
         description: "",
         price: "",
         imageUrl: "",
+        sellerName: "",
+        sellerLocation: "",
         buyerName: "",
         buyerPlace: "",
       });
@@ -255,6 +265,24 @@ const Admin = () => {
                   type="url"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sellerName">Seller Name</Label>
+                <Input
+                  id="sellerName"
+                  value={formData.sellerName}
+                  onChange={(e) => setFormData({ ...formData, sellerName: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sellerLocation">Seller Location</Label>
+                <Input
+                  id="sellerLocation"
+                  value={formData.sellerLocation}
+                  onChange={(e) => setFormData({ ...formData, sellerLocation: e.target.value })}
                 />
               </div>
 
