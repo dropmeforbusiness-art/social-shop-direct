@@ -1,5 +1,6 @@
 import { Hero } from "@/components/ui/animated-hero";
 import { HeroScroll } from "@/components/HeroScroll";
+import { QASection } from "@/components/QASection";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +25,7 @@ const Index = () => {
       </header>
       <Hero />
       <HeroScroll />
+      <QASection />
     </div>
   );
 };
