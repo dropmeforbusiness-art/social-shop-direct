@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
   id: string;
@@ -11,10 +12,14 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ id, name, description, price, imageUrl, buyerName, buyerPlace }: ProductCardProps) => {
+  const navigate = useNavigate();
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop";
   
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg">
+    <Card 
+      className="overflow-hidden transition-all hover:shadow-lg cursor-pointer"
+      onClick={() => navigate(`/product/${id}`)}
+    >
       <div className="aspect-square overflow-hidden bg-muted">
         <img
           src={imageUrl || fallbackImage}
