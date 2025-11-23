@@ -11,13 +11,18 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ id, name, description, price, imageUrl, buyerName, buyerPlace }: ProductCardProps) => {
+  const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop";
+  
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg">
-      <div className="aspect-square overflow-hidden">
+      <div className="aspect-square overflow-hidden bg-muted">
         <img
-          src={imageUrl}
+          src={imageUrl || fallbackImage}
           alt={name}
           className="h-full w-full object-cover transition-transform hover:scale-105"
+          onError={(e) => {
+            e.currentTarget.src = fallbackImage;
+          }}
         />
       </div>
       <CardContent className="p-4">
