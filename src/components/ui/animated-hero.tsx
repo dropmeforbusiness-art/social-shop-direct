@@ -25,17 +25,17 @@ function Hero() {
 
   return (
     <div className="w-full">
-      <div className="container mx-auto">
-        <div className="flex gap-8 py-20 lg:py-40 items-center justify-center flex-col">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex gap-6 sm:gap-8 py-12 sm:py-20 lg:py-40 items-center justify-center flex-col">
           <div>
-            <Button variant="secondary" size="sm" className="gap-4" onClick={() => navigate('/marketplace')}>
-              Go to Marketplace <MoveRight className="w-4 h-4" />
+            <Button variant="secondary" size="sm" className="gap-2 sm:gap-4 text-xs sm:text-sm" onClick={() => navigate('/marketplace')}>
+              Go to Marketplace <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
-          <div className="flex gap-4 flex-col">
-            <h1 className="text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-regular">
+          <div className="flex gap-3 sm:gap-4 flex-col">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-regular px-4">
               <span className="text-spektr-cyan-50">This is something</span>
-              <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1">
+              <span className="relative flex w-full justify-center overflow-hidden text-center pb-2 pt-1 sm:md:pb-4 sm:md:pt-1">
                 &nbsp;
                 {titles.map((title, index) => (
                   <motion.span
@@ -61,16 +61,16 @@ function Hero() {
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center">
+            <p className="text-sm sm:text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center px-4">
               Drop is for everyone - students, families, side-hustlers, collectors, and casual sellers. Send us a message with what you're selling, and we'll handle the rest. Listings in seconds, buyers in minutes, no stress at all.
             </p>
           </div>
-          <div className="flex flex-row gap-3">
-            <Button size="lg" className="gap-4" variant="outline">
-              Sell via WhatsApp <PhoneCall className="w-4 h-4" />
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4">
+            <Button size="sm" className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base" variant="outline">
+              Sell via WhatsApp <PhoneCall className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
-            <Button size="lg" className="gap-4">
-              Sell via Instagram <MoveRight className="w-4 h-4" />
+            <Button size="sm" className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base">
+              Sell via Instagram <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
         </div>

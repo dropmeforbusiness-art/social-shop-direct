@@ -8,9 +8,9 @@ export function HeroScroll() {
       <ContainerScroll
         titleComponent={
           <>
-            <h2 className="text-4xl font-semibold text-foreground">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground px-4">
               Seamless messaging, <br />
-              <span className="text-4xl md:text-[6rem] font-bold mt-1 leading-none">
+              <span className="text-3xl sm:text-4xl md:text-[6rem] font-bold mt-1 leading-none">
                 Effortless selling
               </span>
             </h2>
@@ -20,7 +20,7 @@ export function HeroScroll() {
         <img
           src={instagramMessage}
           alt="Instagram messaging interface"
-          className="mx-auto rounded-2xl object-cover h-full object-left-top"
+          className="mx-auto rounded-xl sm:rounded-2xl object-cover h-full object-left-top"
           draggable={false}
         />
       </ContainerScroll>
