@@ -195,6 +195,9 @@ const Admin = () => {
             <p className="text-sm text-muted-foreground">Manage marketplace products</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/admin/products")}>
+              Manage Products
+            </Button>
             <Button variant="outline" onClick={() => navigate("/marketplace")}>
               View Marketplace
             </Button>
