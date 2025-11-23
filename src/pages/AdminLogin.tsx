@@ -15,6 +15,7 @@ const authSchema = z.object({
 });
 
 const AdminLogin = () => {
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +54,7 @@ const AdminLogin = () => {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
@@ -72,35 +73,65 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (isLogin) {
+        // Login flow
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Check if user is admin
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+        // Check if user is admin
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "admin")
+          .maybeSingle();
 
-      if (!roleData) {
-        await supabase.auth.signOut();
-        throw new Error("Access denied. Admin privileges required.");
+        if (!roleData) {
+          await supabase.auth.signOut();
+          throw new Error("Access denied. Admin privileges required.");
+        }
+
+        toast({
+          title: "Welcome back!",
+          description: "Logged in as admin",
+        });
+
+        navigate("/admin");
+      } else {
+        // Signup flow
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/admin`,
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Account Created!",
+          description: "Now grant yourself admin role in the backend, then log in.",
+        });
+
+        // Show instructions
+        setTimeout(() => {
+          toast({
+            title: "Next Step",
+            description: "Open the backend and run: INSERT INTO user_roles (user_id, role) VALUES ('" + data.user?.id + "', 'admin');",
+            duration: 10000,
+          });
+        }, 1000);
+
+        setIsLogin(true);
       }
-
-      toast({
-        title: "Welcome back!",
-        description: "Logged in as admin",
-      });
-
-      navigate("/admin");
     } catch (error: any) {
       toast({
-        title: "Login Failed",
+        title: isLogin ? "Login Failed" : "Signup Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -116,13 +147,15 @@ const AdminLogin = () => {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Shield className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle>Admin Login</CardTitle>
+          <CardTitle>{isLogin ? "Admin Login" : "Create Admin Account"}</CardTitle>
           <CardDescription>
-            Sign in to access the admin dashboard
+            {isLogin 
+              ? "Sign in to access the admin dashboard"
+              : "Create your admin account to manage products"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -146,17 +179,28 @@ const AdminLogin = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? (isLogin ? "Signing in..." : "Creating account...") : (isLogin ? "Sign In" : "Create Account")}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              onClick={() => navigate("/")}
-              className="text-sm text-muted-foreground"
+          <div className="mt-4 text-center space-y-2">
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm text-primary hover:underline"
             >
-              Back to Home
-            </Button>
+              {isLogin
+                ? "Need an account? Sign up"
+                : "Already have an account? Sign in"}
+            </button>
+            <div>
+              <Button
+                variant="link"
+                onClick={() => navigate("/")}
+                className="text-sm text-muted-foreground"
+              >
+                Back to Home
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
