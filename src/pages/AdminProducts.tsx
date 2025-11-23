@@ -18,6 +18,8 @@ const productSchema = z.object({
   description: z.string().max(500, "Description too long").optional(),
   price: z.number().positive("Price must be positive").max(999999, "Price too high"),
   imageUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  sellerName: z.string().max(100, "Seller name too long").optional(),
+  sellerLocation: z.string().max(100, "Seller location too long").optional(),
   buyerName: z.string().max(100, "Buyer name too long").optional(),
   buyerPlace: z.string().max(100, "Buyer place too long").optional(),
 });
@@ -28,6 +30,8 @@ interface Product {
   description: string | null;
   price: number;
   image_url: string | null;
+  seller_name: string | null;
+  seller_location: string | null;
   buyer_name: string | null;
   buyer_place: string | null;
   status: string;
@@ -46,6 +50,8 @@ const AdminProducts = () => {
     description: "",
     price: "",
     imageUrl: "",
+    sellerName: "",
+    sellerLocation: "",
     buyerName: "",
     buyerPlace: "",
   });
@@ -136,6 +142,8 @@ const AdminProducts = () => {
       description: product.description || "",
       price: product.price.toString(),
       imageUrl: product.image_url || "",
+      sellerName: product.seller_name || "",
+      sellerLocation: product.seller_location || "",
       buyerName: product.buyer_name || "",
       buyerPlace: product.buyer_place || "",
     });
@@ -153,6 +161,8 @@ const AdminProducts = () => {
         description: formData.description || undefined,
         price: parseFloat(formData.price),
         imageUrl: formData.imageUrl || undefined,
+        sellerName: formData.sellerName || undefined,
+        sellerLocation: formData.sellerLocation || undefined,
         buyerName: formData.buyerName || undefined,
         buyerPlace: formData.buyerPlace || undefined,
       });
@@ -166,6 +176,8 @@ const AdminProducts = () => {
           description: validatedData.description,
           price: validatedData.price,
           image_url: validatedData.imageUrl,
+          seller_name: validatedData.sellerName,
+          seller_location: validatedData.sellerLocation,
           buyer_name: validatedData.buyerName,
           buyer_place: validatedData.buyerPlace,
         })
@@ -295,8 +307,13 @@ const AdminProducts = () => {
                         <p className="text-sm text-muted-foreground mt-1">{product.description}</p>
                       )}
                       <p className="text-lg font-bold text-primary mt-2">${product.price.toFixed(2)}</p>
-                      {product.buyer_name && (
+                      {product.seller_name && (
                         <p className="text-sm text-muted-foreground mt-2">
+                          Seller: {product.seller_name} {product.seller_location && `(${product.seller_location})`}
+                        </p>
+                      )}
+                      {product.buyer_name && (
+                        <p className="text-sm text-muted-foreground mt-1">
                           Sold to: {product.buyer_name} {product.buyer_place && `(${product.buyer_place})`}
                         </p>
                       )}
@@ -359,6 +376,24 @@ const AdminProducts = () => {
                                 type="url"
                                 value={formData.imageUrl}
                                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-sellerName">Seller Name</Label>
+                              <Input
+                                id="edit-sellerName"
+                                value={formData.sellerName}
+                                onChange={(e) => setFormData({ ...formData, sellerName: e.target.value })}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-sellerLocation">Seller Location</Label>
+                              <Input
+                                id="edit-sellerLocation"
+                                value={formData.sellerLocation}
+                                onChange={(e) => setFormData({ ...formData, sellerLocation: e.target.value })}
                               />
                             </div>
 

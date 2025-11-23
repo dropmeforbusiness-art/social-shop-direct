@@ -11,6 +11,8 @@ interface Product {
   description: string | null;
   price: number;
   image_url: string | null;
+  seller_name: string | null;
+  seller_location: string | null;
   buyer_name: string | null;
   buyer_place: string | null;
   status: string;
@@ -131,6 +133,22 @@ const ProductDetail = () => {
                   ${product.price.toFixed(2)}
                 </p>
               </div>
+
+              {product.seller_name && (
+                <div className="mb-6 p-4 bg-accent/10 rounded-lg">
+                  <p className="text-sm font-semibold text-foreground mb-2">
+                    Seller Information
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {product.seller_name}
+                  </p>
+                  {product.seller_location && (
+                    <p className="text-sm text-muted-foreground">
+                      {product.seller_location}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {product.status === "sold" && product.buyer_name && (
                 <div className="mb-6 p-4 bg-muted rounded-lg">
