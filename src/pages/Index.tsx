@@ -1,4 +1,4 @@
-import { Hero } from "@/components/Hero";
+import { Hero } from "@/components/ui/animated-hero";
 import { ProductFeed } from "@/components/ProductFeed";
 import { HowItWorks } from "@/components/HowItWorks";
 
