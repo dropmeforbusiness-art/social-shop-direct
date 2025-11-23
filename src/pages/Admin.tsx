@@ -19,9 +19,11 @@ const productSchema = z.object({
   buyerPlace: z.string().max(100, "Buyer place too long").optional(),
 });
 
-const AddProduct = () => {
+const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -35,32 +37,77 @@ const AddProduct = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-      }
-    });
+    checkAdminStatus();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
-        navigate("/auth");
+        navigate("/admin/login");
       } else {
         setUser(session.user);
+        setTimeout(() => checkAdminStatus(), 0);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/admin/login");
+        return;
+      }
+
+      setUser(session.user);
+
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking admin status:", error);
+        setIsAdmin(false);
+        toast({
+          title: "Access Denied",
+          description: "You don't have admin privileges",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      if (!data) {
+        setIsAdmin(false);
+        toast({
+          title: "Access Denied",
+          description: "You don't have admin privileges",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+    } catch (error) {
+      console.error("Error in checkAdminStatus:", error);
+      navigate("/");
+    } finally {
+      setCheckingAuth(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
+    if (!user || !isAdmin) {
       toast({
         title: "Error",
-        description: "You must be logged in to add products",
+        description: "You must be an admin to add products",
         variant: "destructive",
       });
       return;
@@ -103,8 +150,6 @@ const AddProduct = () => {
         buyerName: "",
         buyerPlace: "",
       });
-
-      navigate("/marketplace");
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -126,19 +171,37 @@ const AddProduct = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/admin/login");
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Checking permissions...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="container mx-auto max-w-2xl">
         <div className="flex justify-between items-center mb-6">
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Back to Home
-          </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
-          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Manage marketplace products</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/marketplace")}>
+              View Marketplace
+            </Button>
+            <Button variant="outline" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -221,4 +284,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default Admin;

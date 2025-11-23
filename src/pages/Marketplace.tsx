@@ -78,9 +78,6 @@ const Marketplace = () => {
             <Button variant="outline" onClick={() => navigate("/")}>
               Home
             </Button>
-            <Button onClick={() => navigate("/add-product")}>
-              Add Product
-            </Button>
           </div>
         </div>
 
@@ -90,10 +87,7 @@ const Marketplace = () => {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No products yet</p>
-            <Button onClick={() => navigate("/add-product")}>
-              Add First Product
-            </Button>
+            <p className="text-muted-foreground">No products yet</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
