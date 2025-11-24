@@ -14,16 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      countries: {
+        Row: {
+          code: string
+          created_at: string
+          currency_code: string
+          currency_symbol: string
+          flag_emoji: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          currency_code: string
+          currency_symbol: string
+          flag_emoji?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          currency_code?: string
+          currency_symbol?: string
+          flag_emoji?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           buyer_name: string | null
           buyer_place: string | null
           created_at: string
+          currency: string
           description: string | null
           id: string
           image_url: string | null
           name: string
           price: number
+          seller_country: string | null
           seller_location: string | null
           seller_name: string | null
           status: string | null
@@ -34,11 +66,13 @@ export type Database = {
           buyer_name?: string | null
           buyer_place?: string | null
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
           image_url?: string | null
           name: string
           price: number
+          seller_country?: string | null
           seller_location?: string | null
           seller_name?: string | null
           status?: string | null
@@ -49,11 +83,13 @@ export type Database = {
           buyer_name?: string | null
           buyer_place?: string | null
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
           image_url?: string | null
           name?: string
           price?: number
+          seller_country?: string | null
           seller_location?: string | null
           seller_name?: string | null
           status?: string | null

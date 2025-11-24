@@ -17,6 +17,7 @@ const productSchema = z.object({
   imageUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
   sellerName: z.string().max(100, "Seller name too long").optional(),
   sellerLocation: z.string().max(100, "Seller location too long").optional(),
+  sellerCountry: z.string().max(2, "Use 2-letter country code").optional(),
   buyerName: z.string().max(100, "Buyer name too long").optional(),
   buyerPlace: z.string().max(100, "Buyer place too long").optional(),
 });
@@ -33,6 +34,7 @@ const Admin = () => {
     imageUrl: "",
     sellerName: "",
     sellerLocation: "",
+    sellerCountry: "",
     buyerName: "",
     buyerPlace: "",
   });
@@ -125,6 +127,7 @@ const Admin = () => {
         imageUrl: formData.imageUrl || undefined,
         sellerName: formData.sellerName || undefined,
         sellerLocation: formData.sellerLocation || undefined,
+        sellerCountry: formData.sellerCountry || undefined,
         buyerName: formData.buyerName || undefined,
         buyerPlace: formData.buyerPlace || undefined,
       });
@@ -139,6 +142,7 @@ const Admin = () => {
         image_url: validatedData.imageUrl,
         seller_name: validatedData.sellerName,
         seller_location: validatedData.sellerLocation,
+        seller_country: validatedData.sellerCountry,
         buyer_name: validatedData.buyerName,
         buyer_place: validatedData.buyerPlace,
       });
@@ -157,6 +161,7 @@ const Admin = () => {
         imageUrl: "",
         sellerName: "",
         sellerLocation: "",
+        sellerCountry: "",
         buyerName: "",
         buyerPlace: "",
       });
@@ -283,6 +288,17 @@ const Admin = () => {
                   id="sellerLocation"
                   value={formData.sellerLocation}
                   onChange={(e) => setFormData({ ...formData, sellerLocation: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sellerCountry">Seller Country (2-letter code, e.g. US, GB)</Label>
+                <Input
+                  id="sellerCountry"
+                  value={formData.sellerCountry}
+                  onChange={(e) => setFormData({ ...formData, sellerCountry: e.target.value.toUpperCase() })}
+                  maxLength={2}
+                  placeholder="US"
                 />
               </div>
 
