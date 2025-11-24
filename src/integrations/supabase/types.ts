@@ -44,6 +44,48 @@ export type Database = {
         }
         Relationships: []
       }
+      product_submissions: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          image_url: string | null
+          price: number
+          product_description: string
+          product_name: string
+          seller_location: string
+          seller_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          image_url?: string | null
+          price: number
+          product_description: string
+          product_name: string
+          seller_location: string
+          seller_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          image_url?: string | null
+          price?: number
+          product_description?: string
+          product_name?: string
+          seller_location?: string
+          seller_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           buyer_name: string | null
