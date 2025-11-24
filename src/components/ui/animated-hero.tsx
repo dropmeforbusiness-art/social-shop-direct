@@ -77,14 +77,14 @@ function Hero() {
               size="sm" 
               className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base" 
               variant="outline"
-              onClick={() => window.open('https://wa.me/1234567890', '_blank')}
+              onClick={() => window.open('https://wa.me/971558201813', '_blank')}
             >
               Sell via WhatsApp <PhoneCall className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
             <Button 
               size="sm" 
               className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base"
-              onClick={() => window.open('https://instagram.com', '_blank')}
+              onClick={() => window.open('https://ig.me/m/flipp_online', '_blank')}
             >
               Sell via Instagram <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
