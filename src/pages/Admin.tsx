@@ -27,6 +27,8 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -107,6 +109,48 @@ const Admin = () => {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!imageFile) return formData.imageUrl || null;
+
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-submissions')
+        .upload(filePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-submissions')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -120,19 +164,24 @@ const Admin = () => {
     }
 
     try {
+      setLoading(true);
+
+      // Upload image first if there's a file
+      const uploadedImageUrl = await uploadImage();
+      if (imageFile && !uploadedImageUrl) {
+        throw new Error("Failed to upload image");
+      }
       const validatedData = productSchema.parse({
         name: formData.name,
         description: formData.description || undefined,
         price: parseFloat(formData.price),
-        imageUrl: formData.imageUrl || undefined,
+        imageUrl: uploadedImageUrl || formData.imageUrl || undefined,
         sellerName: formData.sellerName || undefined,
         sellerLocation: formData.sellerLocation || undefined,
         sellerCountry: formData.sellerCountry || undefined,
         buyerName: formData.buyerName || undefined,
         buyerPlace: formData.buyerPlace || undefined,
       });
-
-      setLoading(true);
 
       const { error } = await supabase.from("products").insert({
         user_id: user.id,
@@ -165,6 +214,8 @@ const Admin = () => {
         buyerName: "",
         buyerPlace: "",
       });
+      setImageFile(null);
+      setImagePreview(null);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -267,12 +318,45 @@ const Admin = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="imageUrl">Image URL</Label>
+                <Label htmlFor="imageUpload">Product Image</Label>
+                <Input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                />
+                {imagePreview && (
+                  <div className="mt-2 relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview(null);
+                      }}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Upload an image or leave empty if you prefer to use a URL
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="imageUrl">Or Image URL (optional)</Label>
                 <Input
                   id="imageUrl"
                   type="url"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
                 />
               </div>
 
