@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { PriceDisplay } from "@/components/PriceDisplay";
 
 interface ProductCardProps {
   id: string;
@@ -9,9 +10,10 @@ interface ProductCardProps {
   imageUrl: string;
   buyerName?: string | null;
   buyerPlace?: string | null;
+  currency?: string;
 }
 
-export const ProductCard = ({ id, name, description, price, imageUrl, buyerName, buyerPlace }: ProductCardProps) => {
+export const ProductCard = ({ id, name, description, price, imageUrl, buyerName, buyerPlace, currency = 'USD' }: ProductCardProps) => {
   const navigate = useNavigate();
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop";
   
@@ -35,7 +37,7 @@ export const ProductCard = ({ id, name, description, price, imageUrl, buyerName,
         {description && (
           <p className="mb-2 text-sm text-muted-foreground line-clamp-2">{description}</p>
         )}
-        <p className="text-lg font-bold text-primary mb-2">${price.toFixed(2)}</p>
+        <PriceDisplay price={price} currency={currency} className="text-lg text-primary mb-2" showOriginal={false} />
         {buyerName && (
           <div className="text-xs text-muted-foreground border-t pt-2 mt-2">
             <p>Buyer: {buyerName}</p>

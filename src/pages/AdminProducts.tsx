@@ -20,6 +20,7 @@ const productSchema = z.object({
   imageUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
   sellerName: z.string().max(100, "Seller name too long").optional(),
   sellerLocation: z.string().max(100, "Seller location too long").optional(),
+  sellerCountry: z.string().max(2, "Use 2-letter country code").optional(),
   buyerName: z.string().max(100, "Buyer name too long").optional(),
   buyerPlace: z.string().max(100, "Buyer place too long").optional(),
 });
@@ -32,6 +33,7 @@ interface Product {
   image_url: string | null;
   seller_name: string | null;
   seller_location: string | null;
+  seller_country: string | null;
   buyer_name: string | null;
   buyer_place: string | null;
   status: string;
@@ -52,6 +54,7 @@ const AdminProducts = () => {
     imageUrl: "",
     sellerName: "",
     sellerLocation: "",
+    sellerCountry: "",
     buyerName: "",
     buyerPlace: "",
   });
@@ -144,6 +147,7 @@ const AdminProducts = () => {
       imageUrl: product.image_url || "",
       sellerName: product.seller_name || "",
       sellerLocation: product.seller_location || "",
+      sellerCountry: product.seller_country || "",
       buyerName: product.buyer_name || "",
       buyerPlace: product.buyer_place || "",
     });
@@ -163,6 +167,7 @@ const AdminProducts = () => {
         imageUrl: formData.imageUrl || undefined,
         sellerName: formData.sellerName || undefined,
         sellerLocation: formData.sellerLocation || undefined,
+        sellerCountry: formData.sellerCountry || undefined,
         buyerName: formData.buyerName || undefined,
         buyerPlace: formData.buyerPlace || undefined,
       });
@@ -178,6 +183,7 @@ const AdminProducts = () => {
           image_url: validatedData.imageUrl,
           seller_name: validatedData.sellerName,
           seller_location: validatedData.sellerLocation,
+          seller_country: validatedData.sellerCountry,
           buyer_name: validatedData.buyerName,
           buyer_place: validatedData.buyerPlace,
         })
@@ -394,6 +400,17 @@ const AdminProducts = () => {
                                 id="edit-sellerLocation"
                                 value={formData.sellerLocation}
                                 onChange={(e) => setFormData({ ...formData, sellerLocation: e.target.value })}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-sellerCountry">Seller Country (2-letter code)</Label>
+                              <Input
+                                id="edit-sellerCountry"
+                                value={formData.sellerCountry}
+                                onChange={(e) => setFormData({ ...formData, sellerCountry: e.target.value.toUpperCase() })}
+                                maxLength={2}
+                                placeholder="US"
                               />
                             </div>
 

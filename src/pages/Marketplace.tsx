@@ -6,7 +6,9 @@ import { ProductCard } from "@/components/ProductCard";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Heart } from "lucide-react";
+import { Search, Filter } from "lucide-react";
+import { CountrySelector } from "@/components/CountrySelector";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface Product {
   id: string;
@@ -18,6 +20,8 @@ interface Product {
   buyer_place: string | null;
   status: string;
   created_at: string;
+  currency: string;
+  seller_country: string | null;
 }
 
 const Marketplace = () => {
@@ -26,8 +30,10 @@ const Marketplace = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [countryFilter, setCountryFilter] = useState<string>("all");
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { countries } = useCurrency();
 
   useEffect(() => {
     fetchProducts();
@@ -54,7 +60,7 @@ const Marketplace = () => {
 
   useEffect(() => {
     filterAndSortProducts();
-  }, [products, searchQuery, sortBy]);
+  }, [products, searchQuery, sortBy, countryFilter]);
 
   const fetchProducts = async () => {
     try {
@@ -88,6 +94,11 @@ const Marketplace = () => {
       );
     }
 
+    // Filter by country
+    if (countryFilter !== "all") {
+      filtered = filtered.filter(product => product.seller_country === countryFilter);
+    }
+
     // Sort products
     switch (sortBy) {
       case "newest":
@@ -119,7 +130,8 @@ const Marketplace = () => {
             <h1 className="text-2xl font-bold text-foreground cursor-pointer" onClick={() => navigate("/")}>
               Drop.
             </h1>
-            <nav className="flex gap-6">
+            <nav className="flex items-center gap-4">
+              <CountrySelector />
               <Button variant="ghost" onClick={() => navigate("/")}>
                 Sell
               </Button>
@@ -149,25 +161,43 @@ const Marketplace = () => {
 
       {/* Products Section */}
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
             <h3 className="text-2xl font-bold text-foreground">All Products</h3>
             <p className="text-muted-foreground text-sm">Browse active listings</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-foreground">Sort by:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px] rounded-full border-2 border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-                <SelectItem value="name">Name: A to Z</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={countryFilter} onValueChange={setCountryFilter}>
+                <SelectTrigger className="w-[160px] rounded-full border-2 border-border">
+                  <SelectValue placeholder="All Countries" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {countries.map(country => (
+                    <SelectItem key={country.id} value={country.code}>
+                      {country.flag_emoji} {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-foreground">Sort:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[160px] rounded-full border-2 border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="name">Name: A to Z</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -200,6 +230,7 @@ const Marketplace = () => {
                 imageUrl={product.image_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e"}
                 buyerName={product.buyer_name}
                 buyerPlace={product.buyer_place}
+                currency={product.currency}
               />
             ))}
           </div>
