@@ -23,34 +23,48 @@ const AdminLogin = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkSession();
+    let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        checkAdminAndRedirect(session.user.id);
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && mounted) {
+        await checkAdminAndRedirect(session.user.id);
+      }
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session && mounted) {
+        await checkAdminAndRedirect(session.user.id);
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const checkSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      await checkAdminAndRedirect(session.user.id);
-    }
-  };
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const checkAdminAndRedirect = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
 
-    if (data) {
-      navigate("/admin");
+      if (error) {
+        console.error("Error checking admin role:", error);
+        return;
+      }
+
+      if (data) {
+        navigate("/admin");
+      }
+    } catch (error) {
+      console.error("Error in checkAdminAndRedirect:", error);
     }
   };
 
