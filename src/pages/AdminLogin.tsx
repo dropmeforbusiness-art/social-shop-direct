@@ -130,9 +130,11 @@ const AdminLogin = () => {
         setIsLogin(true);
       }
     } catch (error: any) {
+      console.error("Auth error:", error);
+      const errorMessage = error.message || "Connection failed. Please check your internet connection.";
       toast({
         title: isLogin ? "Login Failed" : "Signup Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
