@@ -62,7 +62,7 @@ function Hero() {
             </h1>
 
             <p className="text-sm sm:text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center px-4">
-              Drop is for everyone - students, families, side-hustlers, collectors, and casual sellers. Send us a message with what you're selling, and we'll handle the rest. Listings in seconds, buyers in minutes, no stress at all.
+              Flipp is for everyone - students, families, side-hustlers, collectors, and casual sellers. Send us a message with what you're selling, and we'll handle the rest. Listings in seconds, buyers in minutes, no stress at all.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4">
