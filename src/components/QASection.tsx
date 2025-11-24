@@ -12,7 +12,7 @@ export function QASection() {
           {/* Question 1 */}
           <div className="flex justify-end px-2">
             <div className="bg-blue-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-3xl rounded-tr-sm max-w-[85%] sm:max-w-md">
-              <p className="text-sm sm:text-base">How much does Flipp cost?</p>
+              <p className="text-sm sm:text-base">How much does Flip cost?</p>
             </div>
           </div>
           
