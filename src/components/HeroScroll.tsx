@@ -20,7 +20,7 @@ export function HeroScroll() {
         <img
           src={instagramMessage}
           alt="Instagram messaging interface"
-          className="mx-auto rounded-xl sm:rounded-2xl object-cover h-full object-left-top"
+          className="mx-auto rounded-xl sm:rounded-2xl object-contain w-full h-full max-h-full"
           draggable={false}
         />
       </ContainerScroll>
