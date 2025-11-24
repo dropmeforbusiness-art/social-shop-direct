@@ -257,21 +257,21 @@ const AdminProducts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
       <div className="container mx-auto max-w-6xl">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Manage Products</h1>
-            <p className="text-sm text-muted-foreground">View, edit, and delete products</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Manage Products</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">View, edit, and delete products</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/admin")}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => navigate("/admin")} className="text-xs sm:text-sm">
               Add Product
             </Button>
-            <Button variant="outline" onClick={() => navigate("/marketplace")}>
+            <Button variant="outline" onClick={() => navigate("/marketplace")} className="text-xs sm:text-sm">
               View Marketplace
             </Button>
-            <Button variant="outline" onClick={handleLogout}>
+            <Button variant="outline" onClick={handleLogout} className="text-xs sm:text-sm">
               Logout
             </Button>
           </div>
@@ -292,33 +292,33 @@ const AdminProducts = () => {
             {products.map((product) => (
               <Card key={product.id}>
                 <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
                     <img
                       src={product.image_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&h=100&fit=crop"}
                       alt={product.name}
-                      className="h-20 w-20 object-cover rounded"
+                      className="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded"
                       onError={(e) => {
                         e.currentTarget.src = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&h=100&fit=crop";
                       }}
                     />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground text-lg">{product.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground text-base sm:text-lg">{product.name}</h3>
                       {product.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{product.description}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
                       )}
-                      <p className="text-lg font-bold text-primary mt-2">${product.price.toFixed(2)}</p>
+                      <p className="text-base sm:text-lg font-bold text-primary mt-2">${product.price.toFixed(2)}</p>
                       {product.seller_name && (
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                           Seller: {product.seller_name} {product.seller_location && `(${product.seller_location})`}
                         </p>
                       )}
                       {product.buyer_name && (
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                           Sold to: {product.buyer_name} {product.buyer_place && `(${product.buyer_place})`}
                         </p>
                       )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 self-start sm:self-center">
                       <Dialog open={isEditDialogOpen && editingProduct?.id === product.id} onOpenChange={setIsEditDialogOpen}>
                         <DialogTrigger asChild>
                           <Button

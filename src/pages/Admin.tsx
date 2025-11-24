@@ -197,21 +197,21 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
       <div className="container mx-auto max-w-2xl">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Manage marketplace products</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Admin Dashboard</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Manage marketplace products</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/admin/products")}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => navigate("/admin/products")} className="text-xs sm:text-sm">
               Manage Products
             </Button>
-            <Button variant="outline" onClick={() => navigate("/marketplace")}>
+            <Button variant="outline" onClick={() => navigate("/marketplace")} className="text-xs sm:text-sm">
               View Marketplace
             </Button>
-            <Button variant="outline" onClick={handleLogout}>
+            <Button variant="outline" onClick={handleLogout} className="text-xs sm:text-sm">
               Logout
             </Button>
           </div>
