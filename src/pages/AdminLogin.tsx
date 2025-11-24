@@ -141,14 +141,14 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Shield className="h-6 w-6 text-primary" />
+        <CardHeader className="text-center px-4 sm:px-6">
+          <div className="mx-auto mb-4 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-primary/10">
+            <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           </div>
-          <CardTitle>{isLogin ? "Admin Login" : "Create Admin Account"}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">{isLogin ? "Admin Login" : "Create Admin Account"}</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
             {isLogin 
               ? "Sign in to access the admin dashboard"
               : "Create your admin account to manage products"}
