@@ -74,7 +74,7 @@ const ProductDetail = () => {
     );
 
     // WhatsApp link format - opens WhatsApp with pre-filled message
-    const whatsappUrl = `https://wa.me/?text=${message}`;
+    const whatsappUrl = `https://wa.me/971558201813?text=${message}`;
     window.open(whatsappUrl, "_blank");
   };
 
