@@ -139,7 +139,7 @@ export default function SellViaChatbot() {
 
             setMessages([...updatedMessages, {
               role: "assistant",
-              content: "Perfect! Your product has been submitted successfully. Our admin team will review it shortly and it will appear on the marketplace once approved. Thank you for selling with Flip!"
+              content: "Perfect! Your product has been submitted successfully. Our admin team will review it shortly and it will appear on the marketplace once approved. Thank you for selling with Flipp!"
             }]);
 
             toast({
