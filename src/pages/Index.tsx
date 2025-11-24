@@ -14,7 +14,7 @@ const Index = () => {
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground cursor-pointer" onClick={() => navigate("/")}>
-              Drop.
+              Flipp.
             </h1>
             <nav className="flex gap-3 sm:gap-6">
               <Button variant="ghost" size="sm" className="sm:size-default" onClick={() => navigate("/marketplace")}>
