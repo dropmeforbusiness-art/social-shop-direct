@@ -128,7 +128,7 @@ const Marketplace = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-foreground cursor-pointer" onClick={() => navigate("/")}>
-              Flip.
+              Flipp.
             </h1>
             <nav className="flex items-center gap-4">
               <CountrySelector />
