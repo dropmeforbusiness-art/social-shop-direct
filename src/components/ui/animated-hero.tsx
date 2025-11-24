@@ -66,10 +66,26 @@ function Hero() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4">
-            <Button size="sm" className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base" variant="outline">
+            <Button 
+              size="sm" 
+              className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base" 
+              onClick={() => window.location.href = '/sell'}
+            >
+              Sell via Chatbot <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base" 
+              variant="outline"
+              onClick={() => window.open('https://wa.me/1234567890', '_blank')}
+            >
               Sell via WhatsApp <PhoneCall className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
-            <Button size="sm" className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base">
+            <Button 
+              size="sm" 
+              className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base"
+              onClick={() => window.open('https://instagram.com', '_blank')}
+            >
               Sell via Instagram <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
