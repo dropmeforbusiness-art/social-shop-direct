@@ -7,6 +7,7 @@ import { ArrowLeft, MessageCircle, CreditCard } from "lucide-react";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ReviewsList } from "@/components/ReviewsList";
 import { Separator } from "@/components/ui/separator";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 declare global {
   interface Window {
@@ -32,6 +33,7 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { exchangeRates } = useCurrency();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [reviewsRefreshTrigger, setReviewsRefreshTrigger] = useState(0);
@@ -92,8 +94,14 @@ const ProductDetail = () => {
   const handleRazorpayPayment = async () => {
     if (!product) return;
 
+    // Convert price to INR for payment
+    const inrRate = exchangeRates['INR'] || 83; // Fallback rate if not available
+    const priceInINR = product.currency === 'INR' 
+      ? product.price 
+      : product.price * inrRate;
+
     // Validate minimum amount for Razorpay (₹1 minimum)
-    if (product.price < 1) {
+    if (priceInINR < 1) {
       toast({
         title: "Payment not available",
         description: "This product's price is too low for online payment. Please use WhatsApp to purchase.",
@@ -108,11 +116,11 @@ const ProductDetail = () => {
         description: "Please wait",
       });
 
-      // Create order via edge function
+      // Create order via edge function with INR amount
       const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
         body: {
-          amount: product.price,
-          currency: product.currency,
+          amount: priceInINR,
+          currency: 'INR',
           productName: product.name,
           productId: product.id,
         },
@@ -309,7 +317,12 @@ const ProductDetail = () => {
                 className="w-full gap-2 text-lg py-6"
               >
                 <CreditCard className="h-5 w-5" />
-                {product.status === "sold" ? "Sold Out" : "Pay with Razorpay"}
+                {product.status === "sold" 
+                  ? "Sold Out" 
+                  : `Pay ₹${(product.currency === 'INR' 
+                      ? product.price 
+                      : product.price * (exchangeRates['INR'] || 83)
+                    ).toFixed(2)} with Razorpay`}
               </Button>
               
               <Button
