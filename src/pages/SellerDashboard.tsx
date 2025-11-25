@@ -21,8 +21,23 @@ interface Product {
   status: string | null;
 }
 
+interface Order {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  buyer_name: string | null;
+  buyer_email: string | null;
+  created_at: string;
+  products: {
+    name: string;
+    image_url: string | null;
+  };
+}
+
 const SellerDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -67,6 +82,7 @@ const SellerDashboard = () => {
 
     setSellerPhone(profile.phone);
     fetchProducts(profile.phone);
+    fetchOrders(profile.phone);
   };
 
   const fetchProducts = async (phone: string) => {
@@ -89,6 +105,28 @@ const SellerDashboard = () => {
 
     setProducts(data || []);
     setLoading(false);
+  };
+
+  const fetchOrders = async (phone: string) => {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(`
+        *,
+        products!inner (
+          name,
+          image_url,
+          seller_phone
+        )
+      `)
+      .eq("products.seller_phone", phone)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error loading orders:", error);
+    } else {
+      setOrders(data || []);
+    }
   };
 
   const handleLogout = async () => {
@@ -315,6 +353,41 @@ const SellerDashboard = () => {
             ))}
           </div>
         )}
+
+        {/* Sold Products / Sales Section */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-foreground mb-6">Your Sales</h2>
+          {orders.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No sales yet. Your sold products will appear here.</p>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {orders.map((order) => (
+                <Card key={order.id}>
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg mb-1">{order.products.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Sold on {new Date(order.created_at).toLocaleDateString()}
+                        </p>
+                        <p className="text-xl font-bold text-primary">₹{order.amount.toFixed(2)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground mb-1">Buyer</p>
+                        <p className="font-medium">{order.buyer_name || order.buyer_email}</p>
+                        {order.buyer_email && (
+                          <p className="text-sm text-muted-foreground">{order.buyer_email}</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

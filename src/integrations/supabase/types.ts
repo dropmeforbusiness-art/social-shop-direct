@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      buyer_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       countries: {
         Row: {
           code: string
@@ -43,6 +67,68 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      orders: {
+        Row: {
+          amount: number
+          buyer_email: string | null
+          buyer_id: string
+          buyer_name: string | null
+          buyer_phone: string | null
+          created_at: string
+          currency: string
+          id: string
+          product_id: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          seller_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          buyer_email?: string | null
+          buyer_id: string
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          product_id: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          buyer_email?: string | null
+          buyer_id?: string
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          product_id?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_reviews: {
         Row: {
