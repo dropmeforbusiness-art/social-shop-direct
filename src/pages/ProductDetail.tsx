@@ -8,6 +8,7 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { ReviewsList } from "@/components/ReviewsList";
 import { Separator } from "@/components/ui/separator";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { PurchaseSuccessModal } from "@/components/PurchaseSuccessModal";
 
 declare global {
   interface Window {
@@ -23,10 +24,12 @@ interface Product {
   image_url: string | null;
   seller_name: string | null;
   seller_location: string | null;
+  seller_phone: string | null;
   buyer_name: string | null;
   buyer_place: string | null;
   status: string;
   currency: string;
+  user_id: string;
 }
 
 const ProductDetail = () => {
@@ -37,6 +40,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [reviewsRefreshTrigger, setReviewsRefreshTrigger] = useState(0);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [purchaseAmount, setPurchaseAmount] = useState(0);
 
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop";
 
@@ -94,9 +99,19 @@ const ProductDetail = () => {
   const handleRazorpayPayment = async () => {
     if (!product) return;
 
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Login required",
+        description: "Please login to make a purchase",
+      });
+      navigate("/buyer/login");
+      return;
+    }
+
     // Convert price to INR for payment
-    // Always assume stored price is in USD unless explicitly INR
-    const inrRate = exchangeRates['INR'] || 83; // Fallback to ~83 INR per USD
+    const inrRate = exchangeRates['INR'] || 83;
     const priceInINR = Math.round(product.price * inrRate);
 
     // Validate minimum amount for Razorpay (₹1 minimum)
@@ -149,12 +164,56 @@ const ProductDetail = () => {
         theme: {
           color: "#000000",
         },
-        handler: function (response: any) {
-          toast({
-            title: "Payment successful!",
-            description: "Your payment has been processed. We'll contact you shortly via WhatsApp.",
-          });
-          console.log('Payment Success:', response);
+        handler: async function (response: any) {
+          // Create order record in database
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session && product) {
+              const { error: orderError } = await supabase
+                .from("orders")
+                .insert({
+                  product_id: product.id,
+                  buyer_id: session.user.id,
+                  seller_id: product.user_id,
+                  razorpay_order_id: data.orderId,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  amount: priceInINR,
+                  currency: 'INR',
+                  status: 'completed',
+                  buyer_name: session.user.email,
+                  buyer_email: session.user.email,
+                });
+
+              if (orderError) {
+                console.error('Error creating order:', orderError);
+              }
+
+              // Update product status to sold
+              await supabase
+                .from("products")
+                .update({ 
+                  status: 'sold',
+                  buyer_name: session.user.email,
+                })
+                .eq("id", product.id);
+
+              // Show success modal
+              setPurchaseAmount(priceInINR);
+              setShowSuccessModal(true);
+              
+              // Refresh product data
+              fetchProduct();
+            }
+          } catch (err) {
+            console.error('Error processing order:', err);
+            toast({
+              title: "Payment successful but order recording failed",
+              description: "Please contact support with your payment ID",
+              variant: "destructive",
+            });
+          }
         },
         modal: {
           ondismiss: function () {
@@ -354,6 +413,16 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Purchase Success Modal */}
+        {product && (
+          <PurchaseSuccessModal
+            open={showSuccessModal}
+            onOpenChange={setShowSuccessModal}
+            productName={product.name}
+            amount={purchaseAmount}
+          />
+        )}
       </div>
     </div>
   );

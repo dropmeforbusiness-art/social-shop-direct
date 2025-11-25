@@ -14,6 +14,8 @@ import ProductDetail from "./pages/ProductDetail";
 import SellViaChatbot from "./pages/SellViaChatbot";
 import SellerLogin from "./pages/SellerLogin";
 import SellerDashboard from "./pages/SellerDashboard";
+import BuyerLogin from "./pages/BuyerLogin";
+import BuyerDashboard from "./pages/BuyerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/admin/submissions" element={<AdminSubmissions />} />
           <Route path="/seller/login" element={<SellerLogin />} />
           <Route path="/seller/dashboard" element={<SellerDashboard />} />
+          <Route path="/buyer/login" element={<BuyerLogin />} />
+          <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/sell" element={<SellViaChatbot />} />
