@@ -3,10 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft, MessageCircle, CreditCard } from "lucide-react";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ReviewsList } from "@/components/ReviewsList";
 import { Separator } from "@/components/ui/separator";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface Product {
   id: string;
@@ -19,6 +25,7 @@ interface Product {
   buyer_name: string | null;
   buyer_place: string | null;
   status: string;
+  currency: string;
 }
 
 const ProductDetail = () => {
@@ -81,6 +88,83 @@ const ProductDetail = () => {
     const whatsappUrl = `https://wa.me/971558201813?text=${message}`;
     window.open(whatsappUrl, "_blank");
   };
+
+  const handleRazorpayPayment = async () => {
+    if (!product) return;
+
+    try {
+      toast({
+        title: "Creating payment order...",
+        description: "Please wait",
+      });
+
+      // Create order via edge function
+      const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
+        body: {
+          amount: product.price,
+          currency: product.currency,
+          productName: product.name,
+          productId: product.id,
+        },
+      });
+
+      if (error) throw error;
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Flipp",
+        description: product.name,
+        image: product.image_url || fallbackImage,
+        order_id: data.orderId,
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
+        },
+        theme: {
+          color: "#000000",
+        },
+        handler: function (response: any) {
+          toast({
+            title: "Payment successful!",
+            description: "Your payment has been processed. We'll contact you shortly via WhatsApp.",
+          });
+          console.log('Payment Success:', response);
+        },
+        modal: {
+          ondismiss: function () {
+            toast({
+              title: "Payment cancelled",
+              description: "You can try again anytime",
+            });
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to initiate payment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -200,16 +284,29 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* WhatsApp Button */}
-            <Button
-              size="lg"
-              onClick={handleWhatsAppClick}
-              disabled={product.status === "sold"}
-              className="w-full gap-2 text-lg py-6"
-            >
-              <MessageCircle className="h-5 w-5" />
-              {product.status === "sold" ? "Sold Out" : "Open WhatsApp to Buy"}
-            </Button>
+            {/* Payment Buttons */}
+            <div className="space-y-3">
+              <Button
+                size="lg"
+                onClick={handleRazorpayPayment}
+                disabled={product.status === "sold"}
+                className="w-full gap-2 text-lg py-6"
+              >
+                <CreditCard className="h-5 w-5" />
+                {product.status === "sold" ? "Sold Out" : "Pay with Razorpay"}
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={handleWhatsAppClick}
+                disabled={product.status === "sold"}
+                className="w-full gap-2 text-lg py-6"
+              >
+                <MessageCircle className="h-5 w-5" />
+                {product.status === "sold" ? "Sold Out" : "Contact on WhatsApp"}
+              </Button>
+            </div>
           </div>
         </div>
 
