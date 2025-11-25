@@ -122,7 +122,7 @@ const ProductDetail = () => {
           upi: true,
           card: true,
           netbanking: false,
-          wallet: false,
+          wallet: true,
         },
         prefill: {
           name: "",
