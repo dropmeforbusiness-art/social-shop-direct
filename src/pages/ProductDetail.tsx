@@ -118,6 +118,12 @@ const ProductDetail = () => {
         description: product.name,
         image: product.image_url || fallbackImage,
         order_id: data.orderId,
+        method: {
+          upi: true,
+          card: true,
+          netbanking: false,
+          wallet: false,
+        },
         prefill: {
           name: "",
           email: "",
