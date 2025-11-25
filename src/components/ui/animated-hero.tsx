@@ -89,6 +89,15 @@ function Hero() {
               Sell via Instagram <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
+          <p className="text-sm text-muted-foreground mt-4 px-4">
+            Already selling?{" "}
+            <button 
+              onClick={() => navigate('/seller/login')}
+              className="underline hover:text-foreground transition-colors"
+            >
+              Log in to your dashboard
+            </button>
+          </p>
         </div>
       </div>
     </div>
