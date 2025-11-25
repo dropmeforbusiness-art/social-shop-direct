@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ReviewForm } from "@/components/ReviewForm";
+import { ReviewsList } from "@/components/ReviewsList";
+import { Separator } from "@/components/ui/separator";
 
 interface Product {
   id: string;
@@ -24,6 +27,7 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reviewsRefreshTrigger, setReviewsRefreshTrigger] = useState(0);
 
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop";
 
@@ -206,6 +210,26 @@ const ProductDetail = () => {
               <MessageCircle className="h-5 w-5" />
               {product.status === "sold" ? "Sold Out" : "Open WhatsApp to Buy"}
             </Button>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-12">
+          <h2 className="text-3xl font-bold text-foreground mb-6">Customer Reviews</h2>
+          
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div>
+              <ReviewsList 
+                productId={product.id} 
+                refreshTrigger={reviewsRefreshTrigger}
+              />
+            </div>
+            <div>
+              <ReviewForm 
+                productId={product.id}
+                onReviewSubmitted={() => setReviewsRefreshTrigger(prev => prev + 1)}
+              />
+            </div>
           </div>
         </div>
       </div>
