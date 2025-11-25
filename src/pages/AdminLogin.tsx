@@ -48,6 +48,9 @@ const AdminLogin = () => {
 
   const checkAdminAndRedirect = async (userId: string) => {
     try {
+      // Small delay to ensure the session is fully established
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")

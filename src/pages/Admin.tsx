@@ -19,52 +19,80 @@ const Admin = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkAdminStatus();
+    let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/admin/login");
-      } else {
-        setUser(session.user);
-        setTimeout(() => checkAdminStatus(), 0);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const checkAdminStatus = async () => {
-    try {
+    const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
+      if (!session && mounted) {
         navigate("/admin/login");
         return;
       }
 
-      setUser(session.user);
+      if (session && mounted) {
+        setUser(session.user);
+        await checkAdminRole(session.user.id);
+      }
+    };
 
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      if (!session) {
+        navigate("/admin/login");
+      } else {
+        setUser(session.user);
+        setTimeout(() => {
+          if (mounted) {
+            checkAdminRole(session.user.id);
+          }
+        }, 100);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+
+  const checkAdminRole = async (userId: string) => {
+    try {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
+        .eq("user_id", userId)
         .eq("role", "admin")
         .maybeSingle();
 
-      if (error || !data) {
+      if (error) {
+        console.error("Error checking admin role:", error);
+        toast({
+          title: "Error",
+          description: "Failed to verify admin status",
+          variant: "destructive",
+        });
+        navigate("/admin/login");
+        return;
+      }
+
+      if (!data) {
         toast({
           title: "Access Denied",
           description: "Admin privileges required",
           variant: "destructive",
         });
+        await supabase.auth.signOut();
         navigate("/");
         return;
       }
 
       setIsAdmin(true);
     } catch (error) {
-      console.error("Error checking admin status:", error);
-      navigate("/");
+      console.error("Error in checkAdminRole:", error);
+      navigate("/admin/login");
     } finally {
       setCheckingAuth(false);
     }
