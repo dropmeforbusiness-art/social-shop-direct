@@ -92,6 +92,16 @@ const ProductDetail = () => {
   const handleRazorpayPayment = async () => {
     if (!product) return;
 
+    // Validate minimum amount for Razorpay (₹1 minimum)
+    if (product.price < 1) {
+      toast({
+        title: "Payment not available",
+        description: "This product's price is too low for online payment. Please use WhatsApp to purchase.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       toast({
         title: "Creating payment order...",

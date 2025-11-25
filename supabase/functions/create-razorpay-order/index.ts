@@ -21,8 +21,14 @@ serve(async (req) => {
     }
 
     // Create order on Razorpay
+    // Razorpay requires minimum 100 paise (₹1) for INR
+    const amountInPaise = Math.round(amount * 100);
+    if (amountInPaise < 100) {
+      throw new Error('Order amount must be at least ₹1 (100 paise)');
+    }
+    
     const orderData = {
-      amount: Math.round(amount * 100), // Convert to paise (for INR)
+      amount: amountInPaise,
       currency: 'INR', // Must be INR for UPI and wallet payments
       receipt: `rcpt_${Date.now()}`, // Keep under 40 char limit
       notes: {
