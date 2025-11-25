@@ -24,7 +24,7 @@ serve(async (req) => {
     const orderData = {
       amount: Math.round(amount * 100), // Convert to cents
       currency: currency || 'USD',
-      receipt: `product_${productId}_${Date.now()}`,
+      receipt: `rcpt_${Date.now()}`, // Keep under 40 char limit
       notes: {
         product_name: productName,
         product_id: productId,
