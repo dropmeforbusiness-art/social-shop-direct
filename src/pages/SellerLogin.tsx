@@ -10,19 +10,17 @@ import { z } from "zod";
 import { Store, Loader2 } from "lucide-react";
 
 const authSchema = z.object({
-  email: z.string().trim().email("Invalid email address").max(255, "Email too long"),
   password: z.string().min(6, "Password must be at least 6 characters").max(100, "Password too long"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
 });
 
 const SellerLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
+  const [resetPhone, setResetPhone] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -74,29 +72,29 @@ const SellerLogin = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate inputs for signup
-    if (!isLogin) {
-      try {
-        authSchema.parse({ email: email.trim(), password, phone: phone.trim() });
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          toast({
-            title: "Validation Error",
-            description: error.errors[0].message,
-            variant: "destructive",
-          });
-          return;
-        }
+    // Validate inputs
+    try {
+      authSchema.parse({ password, phone: phone.trim() });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
       }
     }
 
     setLoading(true);
 
     try {
+      const emailFromPhone = `${phone.trim()}@flipp.local`;
+      
       if (isLogin) {
         // Login flow
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: emailFromPhone,
           password,
         });
 
@@ -133,7 +131,7 @@ const SellerLogin = () => {
       } else {
         // Signup flow
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: emailFromPhone,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/seller/login`,
@@ -185,7 +183,6 @@ const SellerLogin = () => {
         });
 
         setIsLogin(true);
-        setEmail("");
         setPassword("");
         setPhone("");
       }
@@ -205,23 +202,26 @@ const SellerLogin = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+      // Convert phone to email format
+      const emailFromPhone = `${resetPhone.trim()}@flipp.local`;
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(emailFromPhone, {
         redirectTo: `${window.location.origin}/seller/login`,
       });
 
       if (error) throw error;
 
       toast({
-        title: "Reset Email Sent",
+        title: "Reset Link Sent",
         description: "Check your email for the password reset link",
       });
 
       setShowForgotPassword(false);
-      setResetEmail("");
+      setResetPhone("");
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to send reset email",
+        description: error.message || "Failed to send reset link",
         variant: "destructive",
       });
     } finally {
@@ -241,7 +241,7 @@ const SellerLogin = () => {
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm">
             {showForgotPassword
-              ? "Enter your email to receive a reset link"
+              ? "Enter your phone number to receive a reset link"
               : isLogin 
               ? "Sign in to manage your products"
               : "Create your account to start selling"}
@@ -251,13 +251,13 @@ const SellerLogin = () => {
           {showForgotPassword ? (
             <form onSubmit={handlePasswordReset} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email">Email</Label>
+                <Label htmlFor="reset-phone">Phone Number</Label>
                 <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="seller@example.com"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
+                  id="reset-phone"
+                  type="tel"
+                  placeholder="+1234567890"
+                  value={resetPhone}
+                  onChange={(e) => setResetPhone(e.target.value)}
                   required
                 />
               </div>
@@ -284,13 +284,13 @@ const SellerLogin = () => {
           ) : (
             <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="phone">Phone Number</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="seller@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="phone"
+                type="tel"
+                placeholder="+1234567890"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 required
               />
             </div>
@@ -314,19 +314,6 @@ const SellerLogin = () => {
                 >
                   Forgot password?
                 </button>
-              </div>
-            )}
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+1234567890"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
               </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
