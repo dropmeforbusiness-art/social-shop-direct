@@ -22,8 +22,8 @@ serve(async (req) => {
 
     // Create order on Razorpay
     const orderData = {
-      amount: Math.round(amount * 100), // Convert to cents
-      currency: currency || 'USD',
+      amount: Math.round(amount * 100), // Convert to paise (for INR)
+      currency: 'INR', // Must be INR for UPI and wallet payments
       receipt: `rcpt_${Date.now()}`, // Keep under 40 char limit
       notes: {
         product_name: productName,
