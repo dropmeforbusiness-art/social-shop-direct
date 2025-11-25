@@ -55,6 +55,7 @@ serve(async (req) => {
         orderId: order.id,
         amount: order.amount,
         currency: order.currency,
+        keyId: RAZORPAY_KEY_ID,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
