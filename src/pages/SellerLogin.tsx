@@ -21,6 +21,8 @@ const SellerLogin = () => {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -198,6 +200,35 @@ const SellerLogin = () => {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/seller/login`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Reset Email Sent",
+        description: "Check your email for the password reset link",
+      });
+
+      setShowForgotPassword(false);
+      setResetEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
       <Card className="w-full max-w-md">
@@ -205,15 +236,53 @@ const SellerLogin = () => {
           <div className="mx-auto mb-4 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-primary/10">
             <Store className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           </div>
-          <CardTitle className="text-xl sm:text-2xl">{isLogin ? "Seller Login" : "Create Seller Account"}</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">
+            {showForgotPassword ? "Reset Password" : isLogin ? "Seller Login" : "Create Seller Account"}
+          </CardTitle>
           <CardDescription className="text-xs sm:text-sm">
-            {isLogin 
+            {showForgotPassword
+              ? "Enter your email to receive a reset link"
+              : isLogin 
               ? "Sign in to manage your products"
               : "Create your account to start selling"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
+          {showForgotPassword ? (
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="seller@example.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending reset link...
+                  </>
+                ) : (
+                  "Send Reset Link"
+                )}
+              </Button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(false)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Back to login
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -236,6 +305,17 @@ const SellerLogin = () => {
                 required
               />
             </div>
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
@@ -259,7 +339,8 @@ const SellerLogin = () => {
                 isLogin ? "Sign In" : "Create Account"
               )}
             </Button>
-          </form>
+            </form>
+          )}
           <div className="mt-4 text-center space-y-2">
             <button
               type="button"
