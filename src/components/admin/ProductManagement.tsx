@@ -18,6 +18,7 @@ const productSchema = z.object({
   sellerName: z.string().optional(),
   sellerLocation: z.string().optional(),
   sellerCountry: z.string().optional(),
+  sellerPhone: z.string().optional(),
 });
 
 interface Product {
@@ -29,6 +30,7 @@ interface Product {
   seller_name: string | null;
   seller_location: string | null;
   seller_country: string | null;
+  seller_phone: string | null;
   status: string | null;
 }
 
@@ -51,6 +53,7 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
     sellerName: "",
     sellerLocation: "",
     sellerCountry: "",
+    sellerPhone: "",
   });
   const { toast } = useToast();
 
@@ -122,6 +125,7 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
       sellerName: "",
       sellerLocation: "",
       sellerCountry: "",
+      sellerPhone: "",
     });
     setImageFile(null);
     setImagePreview(null);
@@ -143,6 +147,7 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
         sellerName: formData.sellerName || undefined,
         sellerLocation: formData.sellerLocation || undefined,
         sellerCountry: formData.sellerCountry || undefined,
+        sellerPhone: formData.sellerPhone || undefined,
       });
 
       if (editingProduct) {
@@ -156,6 +161,7 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
             seller_name: validatedData.sellerName,
             seller_location: validatedData.sellerLocation,
             seller_country: validatedData.sellerCountry,
+            seller_phone: validatedData.sellerPhone,
           })
           .eq("id", editingProduct.id);
 
@@ -172,6 +178,7 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
           seller_name: validatedData.sellerName,
           seller_location: validatedData.sellerLocation,
           seller_country: validatedData.sellerCountry,
+          seller_phone: validatedData.sellerPhone,
         });
 
         if (error) throw error;
@@ -203,6 +210,7 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
       sellerName: product.seller_name || "",
       sellerLocation: product.seller_location || "",
       sellerCountry: product.seller_country || "",
+      sellerPhone: product.seller_phone || "",
     });
     setImagePreview(product.image_url);
     setIsDialogOpen(true);
@@ -336,15 +344,27 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="sellerCountry">Seller Country (2-letter code)</Label>
-                <Input
-                  id="sellerCountry"
-                  value={formData.sellerCountry}
-                  onChange={(e) => setFormData({ ...formData, sellerCountry: e.target.value.toUpperCase() })}
-                  maxLength={2}
-                  placeholder="US"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="sellerCountry">Seller Country (2-letter code)</Label>
+                  <Input
+                    id="sellerCountry"
+                    value={formData.sellerCountry}
+                    onChange={(e) => setFormData({ ...formData, sellerCountry: e.target.value.toUpperCase() })}
+                    maxLength={2}
+                    placeholder="US"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sellerPhone">Seller Phone</Label>
+                  <Input
+                    id="sellerPhone"
+                    type="tel"
+                    value={formData.sellerPhone}
+                    onChange={(e) => setFormData({ ...formData, sellerPhone: e.target.value })}
+                    placeholder="+1234567890"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2">

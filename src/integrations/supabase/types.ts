@@ -100,6 +100,7 @@ export type Database = {
           seller_country: string | null
           seller_location: string | null
           seller_name: string | null
+          seller_phone: string | null
           status: string | null
           updated_at: string
           user_id: string
@@ -117,6 +118,7 @@ export type Database = {
           seller_country?: string | null
           seller_location?: string | null
           seller_name?: string | null
+          seller_phone?: string | null
           status?: string | null
           updated_at?: string
           user_id: string
@@ -134,8 +136,30 @@ export type Database = {
           seller_country?: string | null
           seller_location?: string | null
           seller_name?: string | null
+          seller_phone?: string | null
           status?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seller_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string
           user_id?: string
         }
         Relationships: []
@@ -175,7 +199,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "seller"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -303,7 +327,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "seller"],
     },
   },
 } as const
