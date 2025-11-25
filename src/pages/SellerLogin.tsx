@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Store, Loader2 } from "lucide-react";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const authSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters").max(100, "Password too long"),
@@ -17,10 +18,12 @@ const authSchema = z.object({
 const SellerLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+971");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetPhone, setResetPhone] = useState("");
+  const [resetCountryCode, setResetCountryCode] = useState("+971");
+  const [resetPhoneNumber, setResetPhoneNumber] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -72,9 +75,11 @@ const SellerLogin = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    const fullPhone = `${countryCode}${phoneNumber}`;
+    
     // Validate inputs
     try {
-      authSchema.parse({ password, phone: phone.trim() });
+      authSchema.parse({ password, phone: fullPhone.trim() });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -89,7 +94,7 @@ const SellerLogin = () => {
     setLoading(true);
 
     try {
-      const emailFromPhone = `${phone.trim()}@flipp.local`;
+      const emailFromPhone = `${fullPhone.trim()}@flipp.local`;
       
       if (isLogin) {
         // Login flow
@@ -154,7 +159,7 @@ const SellerLogin = () => {
           .from("seller_profiles")
           .insert({
             user_id: data.user.id,
-            phone: phone.trim(),
+            phone: fullPhone.trim(),
           });
 
         if (profileError) {
@@ -184,7 +189,7 @@ const SellerLogin = () => {
 
         setIsLogin(true);
         setPassword("");
-        setPhone("");
+        setPhoneNumber("");
       }
     } catch (error: any) {
       toast({
@@ -202,8 +207,9 @@ const SellerLogin = () => {
     setLoading(true);
 
     try {
+      const fullResetPhone = `${resetCountryCode}${resetPhoneNumber}`;
       // Convert phone to email format
-      const emailFromPhone = `${resetPhone.trim()}@flipp.local`;
+      const emailFromPhone = `${fullResetPhone.trim()}@flipp.local`;
       
       const { error } = await supabase.auth.resetPasswordForEmail(emailFromPhone, {
         redirectTo: `${window.location.origin}/seller/login`,
@@ -217,7 +223,7 @@ const SellerLogin = () => {
       });
 
       setShowForgotPassword(false);
-      setResetPhone("");
+      setResetPhoneNumber("");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -250,17 +256,15 @@ const SellerLogin = () => {
         <CardContent>
           {showForgotPassword ? (
             <form onSubmit={handlePasswordReset} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-phone">Phone Number</Label>
-                <Input
-                  id="reset-phone"
-                  type="tel"
-                  placeholder="+1234567890"
-                  value={resetPhone}
-                  onChange={(e) => setResetPhone(e.target.value)}
-                  required
-                />
-              </div>
+              <PhoneInput
+                label="Phone Number"
+                countryCode={resetCountryCode}
+                phoneNumber={resetPhoneNumber}
+                onCountryCodeChange={setResetCountryCode}
+                onPhoneNumberChange={setResetPhoneNumber}
+                required
+                id="reset-phone"
+              />
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <>
@@ -283,17 +287,15 @@ const SellerLogin = () => {
             </form>
           ) : (
             <form onSubmit={handleAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1234567890"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
-            </div>
+            <PhoneInput
+              label="Phone Number"
+              countryCode={countryCode}
+              phoneNumber={phoneNumber}
+              onCountryCodeChange={setCountryCode}
+              onPhoneNumberChange={setPhoneNumber}
+              required
+              id="phone"
+            />
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
