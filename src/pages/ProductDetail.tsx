@@ -95,10 +95,9 @@ const ProductDetail = () => {
     if (!product) return;
 
     // Convert price to INR for payment
-    const inrRate = exchangeRates['INR'] || 83; // Fallback rate if not available
-    const priceInINR = product.currency === 'INR' 
-      ? product.price 
-      : product.price * inrRate;
+    // Always assume stored price is in USD unless explicitly INR
+    const inrRate = exchangeRates['INR'] || 83; // Fallback to ~83 INR per USD
+    const priceInINR = Math.round(product.price * inrRate);
 
     // Validate minimum amount for Razorpay (₹1 minimum)
     if (priceInINR < 1) {
@@ -113,7 +112,7 @@ const ProductDetail = () => {
     try {
       toast({
         title: "Creating payment order...",
-        description: "Please wait",
+        description: `Amount: ₹${priceInINR.toFixed(2)}`,
       });
 
       // Create order via edge function with INR amount
@@ -319,10 +318,7 @@ const ProductDetail = () => {
                 <CreditCard className="h-5 w-5" />
                 {product.status === "sold" 
                   ? "Sold Out" 
-                  : `Pay ₹${(product.currency === 'INR' 
-                      ? product.price 
-                      : product.price * (exchangeRates['INR'] || 83)
-                    ).toFixed(2)} with Razorpay`}
+                  : `Pay ₹${Math.round(product.price * (exchangeRates['INR'] || 83)).toFixed(0)} with Razorpay`}
               </Button>
               
               <Button
