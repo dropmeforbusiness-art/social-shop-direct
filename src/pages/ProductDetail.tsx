@@ -3,12 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageCircle, CreditCard } from "lucide-react";
+import { ArrowLeft, MessageCircle, CreditCard, Truck, MapPin } from "lucide-react";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ReviewsList } from "@/components/ReviewsList";
 import { Separator } from "@/components/ui/separator";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { PurchaseSuccessModal } from "@/components/PurchaseSuccessModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 declare global {
   interface Window {
@@ -30,6 +35,11 @@ interface Product {
   status: string;
   currency: string;
   user_id: string;
+  shipping_method: string | null;
+  seller_address: string | null;
+  seller_pincode: string | null;
+  seller_city: string | null;
+  seller_state: string | null;
 }
 
 const ProductDetail = () => {
@@ -42,6 +52,14 @@ const ProductDetail = () => {
   const [reviewsRefreshTrigger, setReviewsRefreshTrigger] = useState(0);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [purchaseAmount, setPurchaseAmount] = useState(0);
+  const [showShippingDialog, setShowShippingDialog] = useState(false);
+  const [selectedShipping, setSelectedShipping] = useState<"pickup" | "delivery">("pickup");
+  const [deliveryAddress, setDeliveryAddress] = useState({
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
 
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop";
 
@@ -94,6 +112,35 @@ const ProductDetail = () => {
     // WhatsApp link format - opens WhatsApp with pre-filled message
     const whatsappUrl = `https://wa.me/971558201813?text=${message}`;
     window.open(whatsappUrl, "_blank");
+  };
+
+  const handleBuyClick = () => {
+    if (!product) return;
+    
+    // If seller offers shiprocket, show shipping dialog
+    if (product.shipping_method === "shiprocket") {
+      setShowShippingDialog(true);
+    } else {
+      // Direct pickup, proceed to payment
+      setSelectedShipping("pickup");
+      handleRazorpayPayment();
+    }
+  };
+
+  const handleShippingConfirm = () => {
+    // Validate delivery address if delivery is selected
+    if (selectedShipping === "delivery") {
+      if (!deliveryAddress.address || !deliveryAddress.city || !deliveryAddress.state || !deliveryAddress.pincode) {
+        toast({
+          title: "Missing information",
+          description: "Please fill in all delivery address fields",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    setShowShippingDialog(false);
+    handleRazorpayPayment();
   };
 
   const handleRazorpayPayment = async () => {
@@ -184,6 +231,11 @@ const ProductDetail = () => {
                   status: 'completed',
                   buyer_name: session.user.email,
                   buyer_email: session.user.email,
+                  shipping_method: selectedShipping,
+                  delivery_address: selectedShipping === "delivery" ? deliveryAddress.address : null,
+                  delivery_city: selectedShipping === "delivery" ? deliveryAddress.city : null,
+                  delivery_state: selectedShipping === "delivery" ? deliveryAddress.state : null,
+                  delivery_pincode: selectedShipping === "delivery" ? deliveryAddress.pincode : null,
                 });
 
               if (orderError) {
@@ -366,11 +418,37 @@ const ProductDetail = () => {
               </div>
             </div>
 
+            {/* Shipping Information */}
+            {product.shipping_method && (
+              <div className="mb-6 p-4 bg-accent/10 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Truck className="h-5 w-5 text-foreground" />
+                  <p className="text-sm font-semibold text-foreground">
+                    Shipping Options
+                  </p>
+                </div>
+                {product.shipping_method === "pickup" ? (
+                  <p className="text-sm text-muted-foreground">
+                    Pickup from seller's location
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      • Pickup from seller
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      • Delivery via Shiprocket
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Payment Buttons */}
             <div className="space-y-3">
               <Button
                 size="lg"
-                onClick={handleRazorpayPayment}
+                onClick={handleBuyClick}
                 disabled={product.status === "sold"}
                 className="w-full gap-2 text-lg py-6"
               >
@@ -413,6 +491,110 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Shipping Selection Dialog */}
+        <Dialog open={showShippingDialog} onOpenChange={setShowShippingDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Choose Shipping Method</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              <RadioGroup value={selectedShipping} onValueChange={(value: "pickup" | "delivery") => setSelectedShipping(value)}>
+                <div className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                  <RadioGroupItem value="pickup" id="pickup" />
+                  <div className="flex-1">
+                    <Label htmlFor="pickup" className="cursor-pointer font-semibold flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Pickup from Seller
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Free - Collect from seller's location
+                    </p>
+                    {product?.seller_location && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Location: {product.seller_location}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                  <RadioGroupItem value="delivery" id="delivery" />
+                  <div className="flex-1">
+                    <Label htmlFor="delivery" className="cursor-pointer font-semibold flex items-center gap-2">
+                      <Truck className="h-4 w-4" />
+                      Delivery via Shiprocket
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Get it delivered to your address
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
+
+              {selectedShipping === "delivery" && (
+                <div className="space-y-4 p-4 bg-accent/10 rounded-lg">
+                  <h3 className="font-semibold">Delivery Address</h3>
+                  
+                  <div>
+                    <Label htmlFor="address">Full Address *</Label>
+                    <Textarea
+                      id="address"
+                      value={deliveryAddress.address}
+                      onChange={(e) => setDeliveryAddress({ ...deliveryAddress, address: e.target.value })}
+                      placeholder="House no., Street, Area"
+                      rows={2}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="city">City *</Label>
+                      <Input
+                        id="city"
+                        value={deliveryAddress.city}
+                        onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
+                        placeholder="Mumbai"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="state">State *</Label>
+                      <Input
+                        id="state"
+                        value={deliveryAddress.state}
+                        onChange={(e) => setDeliveryAddress({ ...deliveryAddress, state: e.target.value })}
+                        placeholder="Maharashtra"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="pincode">Pincode *</Label>
+                    <Input
+                      id="pincode"
+                      value={deliveryAddress.pincode}
+                      onChange={(e) => setDeliveryAddress({ ...deliveryAddress, pincode: e.target.value })}
+                      placeholder="400001"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <Button onClick={handleShippingConfirm} className="flex-1">
+                  Continue to Payment
+                </Button>
+                <Button variant="outline" onClick={() => setShowShippingDialog(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Purchase Success Modal */}
         {product && (
