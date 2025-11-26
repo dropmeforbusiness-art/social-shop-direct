@@ -29,6 +29,13 @@ interface Order {
   buyer_name: string | null;
   buyer_email: string | null;
   created_at: string;
+  shipping_method: string | null;
+  delivery_address: string | null;
+  delivery_city: string | null;
+  delivery_state: string | null;
+  delivery_pincode: string | null;
+  awb_code: string | null;
+  courier_name: string | null;
   products: {
     name: string;
     image_url: string | null;
@@ -366,7 +373,7 @@ const SellerDashboard = () => {
               {orders.map((order) => (
                 <Card key={order.id}>
                   <CardContent className="p-6">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg mb-1">{order.products.name}</h3>
                         <p className="text-sm text-muted-foreground mb-2">
@@ -382,6 +389,42 @@ const SellerDashboard = () => {
                         )}
                       </div>
                     </div>
+                    
+                    {/* Shipping Information */}
+                    {order.shipping_method && (
+                      <div className="pt-4 border-t">
+                        <h4 className="text-sm font-semibold mb-2">Shipping Details</h4>
+                        <div className="space-y-1 text-sm">
+                          <p className="text-muted-foreground">
+                            Method: <span className="text-foreground capitalize">{order.shipping_method}</span>
+                          </p>
+                          {order.shipping_method === "delivery" && order.delivery_address && (
+                            <>
+                              <p className="text-muted-foreground">
+                                Delivery to: <span className="text-foreground">{order.delivery_address}</span>
+                              </p>
+                              <p className="text-muted-foreground">
+                                <span className="text-foreground">
+                                  {order.delivery_city}, {order.delivery_state} - {order.delivery_pincode}
+                                </span>
+                              </p>
+                            </>
+                          )}
+                          {order.awb_code && (
+                            <>
+                              <p className="text-muted-foreground">
+                                AWB: <span className="text-foreground font-mono">{order.awb_code}</span>
+                              </p>
+                              {order.courier_name && (
+                                <p className="text-muted-foreground">
+                                  Courier: <span className="text-foreground">{order.courier_name}</span>
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

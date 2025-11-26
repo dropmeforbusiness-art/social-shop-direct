@@ -60,6 +60,8 @@ const ProductDetail = () => {
     state: "",
     pincode: "",
   });
+  const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const [checkingShipping, setCheckingShipping] = useState(false);
 
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop";
 
@@ -124,6 +126,48 @@ const ProductDetail = () => {
       // Direct pickup, proceed to payment
       setSelectedShipping("pickup");
       handleRazorpayPayment();
+    }
+  };
+
+  const checkShippingCost = async () => {
+    if (!product || !deliveryAddress.pincode) return;
+    
+    setCheckingShipping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('shiprocket-service', {
+        body: {
+          action: 'check_serviceability',
+          pickupPincode: product.seller_pincode || '400001',
+          deliveryPincode: deliveryAddress.pincode,
+          weight: 1, // Default weight in kg
+          cod: 0,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.data?.available_courier_companies?.length > 0) {
+        const cheapestCourier = data.data.available_courier_companies.reduce((min: any, courier: any) => 
+          courier.rate < min.rate ? courier : min
+        );
+        setShippingCost(cheapestCourier.rate);
+      } else {
+        toast({
+          title: "Delivery not available",
+          description: "Shiprocket delivery is not available for this pincode",
+          variant: "destructive",
+        });
+        setShippingCost(null);
+      }
+    } catch (error: any) {
+      console.error('Shipping check error:', error);
+      toast({
+        title: "Error checking shipping",
+        description: "Unable to calculate shipping cost. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingShipping(false);
     }
   };
 
@@ -217,7 +261,7 @@ const ProductDetail = () => {
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session && product) {
-              const { error: orderError } = await supabase
+              const { data: orderData, error: orderError } = await supabase
                 .from("orders")
                 .insert({
                   product_id: product.id,
@@ -236,10 +280,71 @@ const ProductDetail = () => {
                   delivery_city: selectedShipping === "delivery" ? deliveryAddress.city : null,
                   delivery_state: selectedShipping === "delivery" ? deliveryAddress.state : null,
                   delivery_pincode: selectedShipping === "delivery" ? deliveryAddress.pincode : null,
-                });
+                })
+                .select()
+                .single();
 
               if (orderError) {
                 console.error('Error creating order:', orderError);
+              }
+
+              // Create Shiprocket order if delivery is selected
+              if (selectedShipping === "delivery" && orderData && product.seller_pincode) {
+                try {
+                  const shiprocketOrderData = {
+                    order_id: orderData.id,
+                    order_date: new Date().toISOString().split('T')[0],
+                    pickup_location: product.seller_location || "Seller Location",
+                    billing_customer_name: session.user.email?.split('@')[0] || "Customer",
+                    billing_last_name: "",
+                    billing_address: deliveryAddress.address,
+                    billing_city: deliveryAddress.city,
+                    billing_pincode: deliveryAddress.pincode,
+                    billing_state: deliveryAddress.state,
+                    billing_country: "India",
+                    billing_email: session.user.email || "",
+                    billing_phone: session.user.phone || "9999999999",
+                    shipping_is_billing: true,
+                    order_items: [{
+                      name: product.name,
+                      sku: product.id,
+                      units: 1,
+                      selling_price: priceInINR,
+                    }],
+                    payment_method: "Prepaid",
+                    sub_total: priceInINR,
+                    length: 10,
+                    breadth: 10,
+                    height: 10,
+                    weight: 1,
+                  };
+
+                  const { data: shiprocketData, error: shiprocketError } = await supabase.functions.invoke('shiprocket-service', {
+                    body: {
+                      action: 'create_order',
+                      orderData: shiprocketOrderData,
+                    },
+                  });
+
+                  if (!shiprocketError && shiprocketData) {
+                    // Update order with Shiprocket details
+                    await supabase
+                      .from("orders")
+                      .update({
+                        shiprocket_order_id: shiprocketData.order_id?.toString(),
+                        shiprocket_shipment_id: shiprocketData.shipment_id?.toString(),
+                        awb_code: shiprocketData.awb_code,
+                        courier_name: shiprocketData.courier_name,
+                      })
+                      .eq("id", orderData.id);
+
+                    console.log('Shiprocket order created:', shiprocketData);
+                  } else {
+                    console.error('Shiprocket order creation failed:', shiprocketError);
+                  }
+                } catch (shiprocketErr) {
+                  console.error('Shiprocket error:', shiprocketErr);
+                }
               }
 
               // Update product status to sold
@@ -576,11 +681,26 @@ const ProductDetail = () => {
                     <Input
                       id="pincode"
                       value={deliveryAddress.pincode}
-                      onChange={(e) => setDeliveryAddress({ ...deliveryAddress, pincode: e.target.value })}
+                      onChange={(e) => {
+                        setDeliveryAddress({ ...deliveryAddress, pincode: e.target.value });
+                        setShippingCost(null);
+                      }}
                       placeholder="400001"
                       className="mt-1"
+                      onBlur={checkShippingCost}
                     />
                   </div>
+
+                  {checkingShipping && (
+                    <p className="text-sm text-muted-foreground">Calculating shipping cost...</p>
+                  )}
+
+                  {shippingCost !== null && (
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <p className="text-sm font-semibold">Estimated Shipping Cost: ₹{shippingCost.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">This will be added to your total</p>
+                    </div>
+                  )}
                 </div>
               )}
 

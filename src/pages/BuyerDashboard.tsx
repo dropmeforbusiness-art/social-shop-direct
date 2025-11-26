@@ -15,6 +15,15 @@ interface Order {
   status: string;
   razorpay_payment_id: string | null;
   created_at: string;
+  shipping_method: string | null;
+  delivery_address: string | null;
+  delivery_city: string | null;
+  delivery_state: string | null;
+  delivery_pincode: string | null;
+  awb_code: string | null;
+  courier_name: string | null;
+  tracking_url: string | null;
+  shiprocket_order_id: string | null;
   products: {
     id: string;
     name: string;
@@ -91,6 +100,32 @@ const BuyerDashboard = () => {
       toast({
         title: "Contact unavailable",
         description: "Seller phone number not available",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTrackShipment = async (awbCode: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('shiprocket-service', {
+        body: {
+          action: 'track_shipment',
+          awbCode: awbCode,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.tracking_data) {
+        toast({
+          title: "Shipment Status",
+          description: `Current status: ${data.tracking_data.shipment_status || 'In transit'}`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Unable to fetch tracking information",
         variant: "destructive",
       });
     }
@@ -190,6 +225,54 @@ const BuyerDashboard = () => {
                       </div>
 
                       <Separator />
+
+                      {/* Shipping Information */}
+                      {order.shipping_method && (
+                        <>
+                          <div>
+                            <h3 className="font-semibold text-foreground mb-2">Shipping Details</h3>
+                            <div className="space-y-1 text-sm">
+                              <p className="text-muted-foreground">
+                                Method: <span className="text-foreground capitalize">{order.shipping_method}</span>
+                              </p>
+                              {order.shipping_method === "delivery" && order.delivery_address && (
+                                <>
+                                  <p className="text-muted-foreground">
+                                    Address: <span className="text-foreground">{order.delivery_address}</span>
+                                  </p>
+                                  <p className="text-muted-foreground">
+                                    <span className="text-foreground">
+                                      {order.delivery_city}, {order.delivery_state} - {order.delivery_pincode}
+                                    </span>
+                                  </p>
+                                </>
+                              )}
+                              {order.awb_code && (
+                                <>
+                                  <p className="text-muted-foreground mt-2">
+                                    AWB Code: <span className="text-foreground font-mono">{order.awb_code}</span>
+                                  </p>
+                                  {order.courier_name && (
+                                    <p className="text-muted-foreground">
+                                      Courier: <span className="text-foreground">{order.courier_name}</span>
+                                    </p>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                            {order.awb_code && (
+                              <Button
+                                onClick={() => handleTrackShipment(order.awb_code!)}
+                                className="mt-4 w-full"
+                                variant="outline"
+                              >
+                                Track Shipment
+                              </Button>
+                            )}
+                          </div>
+                          <Separator />
+                        </>
+                      )}
 
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Seller Information</h3>
