@@ -71,53 +71,83 @@ export type Database = {
       orders: {
         Row: {
           amount: number
+          awb_code: string | null
           buyer_email: string | null
           buyer_id: string
           buyer_name: string | null
           buyer_phone: string | null
+          courier_name: string | null
           created_at: string
           currency: string
+          delivery_address: string | null
+          delivery_city: string | null
+          delivery_pincode: string | null
+          delivery_state: string | null
           id: string
           product_id: string
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
           razorpay_signature: string | null
           seller_id: string
+          shipping_method: string | null
+          shiprocket_order_id: string | null
+          shiprocket_shipment_id: string | null
           status: string
+          tracking_url: string | null
           updated_at: string
         }
         Insert: {
           amount: number
+          awb_code?: string | null
           buyer_email?: string | null
           buyer_id: string
           buyer_name?: string | null
           buyer_phone?: string | null
+          courier_name?: string | null
           created_at?: string
           currency?: string
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_pincode?: string | null
+          delivery_state?: string | null
           id?: string
           product_id: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           razorpay_signature?: string | null
           seller_id: string
+          shipping_method?: string | null
+          shiprocket_order_id?: string | null
+          shiprocket_shipment_id?: string | null
           status?: string
+          tracking_url?: string | null
           updated_at?: string
         }
         Update: {
           amount?: number
+          awb_code?: string | null
           buyer_email?: string | null
           buyer_id?: string
           buyer_name?: string | null
           buyer_phone?: string | null
+          courier_name?: string | null
           created_at?: string
           currency?: string
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_pincode?: string | null
+          delivery_state?: string | null
           id?: string
           product_id?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           razorpay_signature?: string | null
           seller_id?: string
+          shipping_method?: string | null
+          shiprocket_order_id?: string | null
+          shiprocket_shipment_id?: string | null
           status?: string
+          tracking_url?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -221,10 +251,15 @@ export type Database = {
           image_url: string | null
           name: string
           price: number
+          seller_address: string | null
+          seller_city: string | null
           seller_country: string | null
           seller_location: string | null
           seller_name: string | null
           seller_phone: string | null
+          seller_pincode: string | null
+          seller_state: string | null
+          shipping_method: string | null
           status: string | null
           updated_at: string
           user_id: string
@@ -239,10 +274,15 @@ export type Database = {
           image_url?: string | null
           name: string
           price: number
+          seller_address?: string | null
+          seller_city?: string | null
           seller_country?: string | null
           seller_location?: string | null
           seller_name?: string | null
           seller_phone?: string | null
+          seller_pincode?: string | null
+          seller_state?: string | null
+          shipping_method?: string | null
           status?: string | null
           updated_at?: string
           user_id: string
@@ -257,10 +297,15 @@ export type Database = {
           image_url?: string | null
           name?: string
           price?: number
+          seller_address?: string | null
+          seller_city?: string | null
           seller_country?: string | null
           seller_location?: string | null
           seller_name?: string | null
           seller_phone?: string | null
+          seller_pincode?: string | null
+          seller_state?: string | null
+          shipping_method?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string
