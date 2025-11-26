@@ -67,6 +67,7 @@ const Marketplace = () => {
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .neq("status", "sold")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
