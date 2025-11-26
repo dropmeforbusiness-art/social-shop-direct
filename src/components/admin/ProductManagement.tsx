@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Image as ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { z } from "zod";
 
 const productSchema = z.object({
@@ -19,6 +20,11 @@ const productSchema = z.object({
   sellerLocation: z.string().optional(),
   sellerCountry: z.string().optional(),
   sellerPhone: z.string().optional(),
+  shippingMethod: z.string().optional(),
+  sellerAddress: z.string().optional(),
+  sellerPincode: z.string().optional(),
+  sellerCity: z.string().optional(),
+  sellerState: z.string().optional(),
 });
 
 interface Product {
@@ -32,6 +38,11 @@ interface Product {
   seller_country: string | null;
   seller_phone: string | null;
   status: string | null;
+  shipping_method: string | null;
+  seller_address: string | null;
+  seller_pincode: string | null;
+  seller_city: string | null;
+  seller_state: string | null;
 }
 
 interface ProductManagementProps {
@@ -54,6 +65,11 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
     sellerLocation: "",
     sellerCountry: "",
     sellerPhone: "",
+    shippingMethod: "pickup",
+    sellerAddress: "",
+    sellerPincode: "",
+    sellerCity: "",
+    sellerState: "",
   });
   const { toast } = useToast();
 
@@ -126,6 +142,11 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
       sellerLocation: "",
       sellerCountry: "",
       sellerPhone: "",
+      shippingMethod: "pickup",
+      sellerAddress: "",
+      sellerPincode: "",
+      sellerCity: "",
+      sellerState: "",
     });
     setImageFile(null);
     setImagePreview(null);
@@ -148,6 +169,11 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
         sellerLocation: formData.sellerLocation || undefined,
         sellerCountry: formData.sellerCountry || undefined,
         sellerPhone: formData.sellerPhone || undefined,
+        shippingMethod: formData.shippingMethod || undefined,
+        sellerAddress: formData.sellerAddress || undefined,
+        sellerPincode: formData.sellerPincode || undefined,
+        sellerCity: formData.sellerCity || undefined,
+        sellerState: formData.sellerState || undefined,
       });
 
       if (editingProduct) {
@@ -162,6 +188,11 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
             seller_location: validatedData.sellerLocation,
             seller_country: validatedData.sellerCountry,
             seller_phone: validatedData.sellerPhone,
+            shipping_method: validatedData.shippingMethod,
+            seller_address: validatedData.sellerAddress,
+            seller_pincode: validatedData.sellerPincode,
+            seller_city: validatedData.sellerCity,
+            seller_state: validatedData.sellerState,
           })
           .eq("id", editingProduct.id);
 
@@ -179,6 +210,11 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
           seller_location: validatedData.sellerLocation,
           seller_country: validatedData.sellerCountry,
           seller_phone: validatedData.sellerPhone,
+          shipping_method: validatedData.shippingMethod,
+          seller_address: validatedData.sellerAddress,
+          seller_pincode: validatedData.sellerPincode,
+          seller_city: validatedData.sellerCity,
+          seller_state: validatedData.sellerState,
         });
 
         if (error) throw error;
@@ -211,6 +247,11 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
       sellerLocation: product.seller_location || "",
       sellerCountry: product.seller_country || "",
       sellerPhone: product.seller_phone || "",
+      shippingMethod: product.shipping_method || "pickup",
+      sellerAddress: product.seller_address || "",
+      sellerPincode: product.seller_pincode || "",
+      sellerCity: product.seller_city || "",
+      sellerState: product.seller_state || "",
     });
     setImagePreview(product.image_url);
     setIsDialogOpen(true);
@@ -366,6 +407,63 @@ export const ProductManagement = ({ userId }: ProductManagementProps) => {
                   />
                 </div>
               </div>
+
+              <div>
+                <Label htmlFor="shippingMethod">Shipping Method *</Label>
+                <Select value={formData.shippingMethod} onValueChange={(value) => setFormData({ ...formData, shippingMethod: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select shipping method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pickup">Pickup from Seller</SelectItem>
+                    <SelectItem value="shiprocket">Deliver via Shiprocket</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.shippingMethod === "shiprocket" && (
+                <>
+                  <div>
+                    <Label htmlFor="sellerAddress">Seller Address *</Label>
+                    <Textarea
+                      id="sellerAddress"
+                      value={formData.sellerAddress}
+                      onChange={(e) => setFormData({ ...formData, sellerAddress: e.target.value })}
+                      placeholder="Full address for pickup"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="sellerCity">City *</Label>
+                      <Input
+                        id="sellerCity"
+                        value={formData.sellerCity}
+                        onChange={(e) => setFormData({ ...formData, sellerCity: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="sellerState">State *</Label>
+                      <Input
+                        id="sellerState"
+                        value={formData.sellerState}
+                        onChange={(e) => setFormData({ ...formData, sellerState: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="sellerPincode">Pincode *</Label>
+                    <Input
+                      id="sellerPincode"
+                      value={formData.sellerPincode}
+                      onChange={(e) => setFormData({ ...formData, sellerPincode: e.target.value })}
+                      placeholder="110001"
+                    />
+                  </div>
+                </>
+              )}
 
               <div className="flex gap-2">
                 <Button type="submit" disabled={loading} className="flex-1">
