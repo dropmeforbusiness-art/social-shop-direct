@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Package, LogOut, MessageCircle } from "lucide-react";
+import { ArrowLeft, Package, LogOut, Heart } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -158,6 +158,10 @@ const BuyerDashboard = () => {
             <p className="text-muted-foreground mt-2">{userEmail}</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/wishlist")} className="gap-2">
+              <Heart className="h-4 w-4" />
+              Wishlist
+            </Button>
             <ChatButton userType="buyer" variant="full" />
             <Button variant="outline" onClick={handleLogout} className="gap-2">
               <LogOut className="h-4 w-4" />

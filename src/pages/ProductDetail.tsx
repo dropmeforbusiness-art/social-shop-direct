@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChatButton } from "@/components/chat/ChatButton";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 
 declare global {
   interface Window {
@@ -446,9 +447,14 @@ const ProductDetail = () => {
           {/* Product Details */}
           <div className="flex flex-col">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold text-foreground mb-4">
-                {product.name}
-              </h1>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <h1 className="text-4xl font-bold text-foreground">
+                  {product.name}
+                </h1>
+                {product.status !== "sold" && (
+                  <WishlistButton productId={product.id} variant="full" />
+                )}
+              </div>
 
               {product.description && (
                 <p className="text-lg text-muted-foreground mb-6">

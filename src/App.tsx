@@ -16,6 +16,7 @@ import SellerLogin from "./pages/SellerLogin";
 import SellerDashboard from "./pages/SellerDashboard";
 import BuyerLogin from "./pages/BuyerLogin";
 import BuyerDashboard from "./pages/BuyerDashboard";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/seller/dashboard" element={<SellerDashboard />} />
           <Route path="/buyer/login" element={<BuyerLogin />} />
           <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/sell" element={<SellViaChatbot />} />
