@@ -64,6 +64,7 @@ const ProductDetail = () => {
   });
   const [shippingCost, setShippingCost] = useState<number | null>(null);
   const [checkingShipping, setCheckingShipping] = useState(false);
+  const [sellerUserId, setSellerUserId] = useState<string | null>(null);
 
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop";
 
@@ -94,6 +95,19 @@ const ProductDetail = () => {
       }
 
       setProduct(data);
+
+      // Fetch seller's user_id from seller_profiles using seller_phone
+      if (data.seller_phone) {
+        const { data: sellerProfile } = await supabase
+          .from("seller_profiles")
+          .select("user_id")
+          .eq("phone", data.seller_phone)
+          .maybeSingle();
+
+        if (sellerProfile) {
+          setSellerUserId(sellerProfile.user_id);
+        }
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -582,10 +596,10 @@ const ProductDetail = () => {
                   WhatsApp
                 </Button>
                 
-                {product.status !== "sold" && (
+                {product.status !== "sold" && sellerUserId && (
                   <ChatButton
                     productId={product.id}
-                    sellerId={product.user_id}
+                    sellerId={sellerUserId}
                     sellerName={product.seller_name || "Seller"}
                     userType="buyer"
                     variant="full"
