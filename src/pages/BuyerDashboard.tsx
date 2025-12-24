@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Package, LogOut } from "lucide-react";
+import { ArrowLeft, Package, LogOut, MessageCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ChatButton } from "@/components/chat/ChatButton";
 
 interface Order {
   id: string;
@@ -156,10 +157,13 @@ const BuyerDashboard = () => {
             <h1 className="text-4xl font-bold text-foreground">My Purchases</h1>
             <p className="text-muted-foreground mt-2">{userEmail}</p>
           </div>
-          <Button variant="outline" onClick={handleLogout} className="gap-2">
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <ChatButton userType="buyer" variant="full" />
+            <Button variant="outline" onClick={handleLogout} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Orders List */}
