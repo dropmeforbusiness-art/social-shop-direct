@@ -29,7 +29,11 @@ export const ChatWindow = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     fetchMessages();
@@ -45,11 +49,18 @@ export const ChatWindow = ({
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
+          console.log("New message received:", payload.new);
           const newMsg = payload.new as Message;
-          setMessages((prev) => [...prev, newMsg]);
+          setMessages((prev) => {
+            // Avoid duplicates
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Realtime subscription status:", status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -57,9 +68,7 @@ export const ChatWindow = ({
   }, [conversationId]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages]);
 
   const fetchMessages = async () => {
@@ -105,7 +114,7 @@ export const ChatWindow = ({
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 p-3" ref={scrollRef}>
+      <ScrollArea className="flex-1 p-3">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <span className="text-muted-foreground">Loading...</span>
@@ -137,6 +146,7 @@ export const ChatWindow = ({
                 </span>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         )}
       </ScrollArea>
