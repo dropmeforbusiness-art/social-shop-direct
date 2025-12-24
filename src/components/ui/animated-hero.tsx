@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { MoveRight, PhoneCall } from "lucide-react";
+import { MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -67,36 +67,15 @@ function Hero() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto px-4">
             <Button 
-              size="sm" 
-              className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base" 
-              onClick={() => window.location.href = '/sell'}
+              size="lg" 
+              className="gap-2 sm:gap-4 w-full sm:w-auto text-sm sm:text-base" 
+              onClick={() => navigate('/seller/login')}
             >
-              Sell via Chatbot <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-            <Button 
-              size="sm" 
-              className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base" 
-              variant="outline"
-              onClick={() => window.open('https://wa.me/971558201813', '_blank')}
-            >
-              Sell via WhatsApp <PhoneCall className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-            <Button 
-              size="sm" 
-              className="gap-2 sm:gap-4 w-full sm:w-auto sm:size-lg text-xs sm:text-base"
-              onClick={() => window.open('https://ig.me/m/flipp_online', '_blank')}
-            >
-              Sell via Instagram <MoveRight className="w-3 h-3 sm:w-4 sm:h-4" />
+              Sell via Flipp <MoveRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-4 px-4">
-            Already selling?{" "}
-            <button 
-              onClick={() => navigate('/seller/login')}
-              className="underline hover:text-foreground transition-colors"
-            >
-              Log in to your dashboard
-            </button>
+            Log in or create a seller account to start listing your items
           </p>
         </div>
       </div>
