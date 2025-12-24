@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ChatButton } from "@/components/chat/ChatButton";
 
 declare global {
   interface Window {
@@ -563,16 +564,28 @@ const ProductDetail = () => {
                   : `Pay ₹${Math.round(product.price * (exchangeRates['INR'] || 83)).toFixed(0)} with Razorpay`}
               </Button>
               
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={handleWhatsAppClick}
-                disabled={product.status === "sold"}
-                className="w-full gap-2 text-lg py-6"
-              >
-                <MessageCircle className="h-5 w-5" />
-                {product.status === "sold" ? "Sold Out" : "Contact on WhatsApp"}
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={handleWhatsAppClick}
+                  disabled={product.status === "sold"}
+                  className="flex-1 gap-2 text-lg py-6"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  WhatsApp
+                </Button>
+                
+                {product.status !== "sold" && (
+                  <ChatButton
+                    productId={product.id}
+                    sellerId={product.user_id}
+                    sellerName={product.seller_name || "Seller"}
+                    userType="buyer"
+                    variant="full"
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
