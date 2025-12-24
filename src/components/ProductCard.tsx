@@ -4,6 +4,7 @@ import { PriceDisplay } from "@/components/PriceDisplay";
 import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 
 interface ProductCardProps {
   id: string;
@@ -47,18 +48,21 @@ export const ProductCard = ({ id, name, description, price, imageUrl, buyerName,
   
   return (
     <Card 
-      className="overflow-hidden transition-all hover:shadow-lg cursor-pointer"
+      className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
       onClick={() => navigate(`/product/${id}`)}
     >
-      <div className="aspect-square overflow-hidden bg-muted">
+      <div className="aspect-square overflow-hidden bg-muted relative">
         <img
           src={imageUrl || fallbackImage}
           alt={name}
-          className="h-full w-full object-cover transition-transform hover:scale-105"
+          className="h-full w-full object-cover transition-transform group-hover:scale-105"
           onError={(e) => {
             e.currentTarget.src = fallbackImage;
           }}
         />
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <WishlistButton productId={id} />
+        </div>
       </div>
       <CardContent className="p-4">
         <h3 className="mb-1 font-semibold text-foreground">{name}</h3>
