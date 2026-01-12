@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,13 @@ interface Product {
   seller_country: string | null;
 }
 
+interface SponsoredProduct extends Product {
+  campaignId: string;
+}
+
 const Marketplace = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [sponsoredProducts, setSponsoredProducts] = useState<SponsoredProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,6 +42,7 @@ const Marketplace = () => {
 
   useEffect(() => {
     fetchProducts();
+    fetchSponsoredProducts();
 
     const channel = supabase
       .channel("products-changes")
@@ -49,6 +55,7 @@ const Marketplace = () => {
         },
         () => {
           fetchProducts();
+          fetchSponsoredProducts();
         }
       )
       .subscribe();
@@ -60,7 +67,7 @@ const Marketplace = () => {
 
   useEffect(() => {
     filterAndSortProducts();
-  }, [products, searchQuery, sortBy, countryFilter]);
+  }, [products, searchQuery, sortBy, countryFilter, sponsoredProducts]);
 
   const fetchProducts = async () => {
     try {
@@ -83,8 +90,58 @@ const Marketplace = () => {
     }
   };
 
+  const fetchSponsoredProducts = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: campaigns, error } = await supabase
+        .from("ad_campaigns")
+        .select(`
+          id,
+          product_id,
+          products (*)
+        `)
+        .eq("status", "active")
+        .lte("start_date", today)
+        .gte("end_date", today);
+
+      if (error) throw error;
+
+      const sponsored: SponsoredProduct[] = (campaigns || [])
+        .filter(c => c.products && (c.products as any).status !== 'sold')
+        .map(c => ({
+          ...(c.products as any),
+          campaignId: c.id,
+        }));
+
+      setSponsoredProducts(sponsored);
+    } catch (error) {
+      console.error("Error fetching sponsored products:", error);
+    }
+  };
+
+  const trackImpression = useCallback(async (campaignId: string) => {
+    try {
+      await supabase.rpc('increment_campaign_impressions', { campaign_id: campaignId });
+    } catch (error) {
+      // Silently fail - don't interrupt user experience
+      console.error("Failed to track impression:", error);
+    }
+  }, []);
+
+  const trackClick = useCallback(async (campaignId: string) => {
+    try {
+      await supabase.rpc('increment_campaign_clicks', { campaign_id: campaignId });
+    } catch (error) {
+      console.error("Failed to track click:", error);
+    }
+  }, []);
+
   const filterAndSortProducts = () => {
-    let filtered = [...products];
+    // Get sponsored product IDs to exclude from regular list
+    const sponsoredIds = new Set(sponsoredProducts.map(p => p.id));
+    
+    let filtered = products.filter(p => !sponsoredIds.has(p.id));
 
     // Filter by search query
     if (searchQuery) {
@@ -121,6 +178,27 @@ const Marketplace = () => {
 
     setFilteredProducts(filtered);
   };
+
+  // Filter sponsored products based on search and country
+  const getFilteredSponsoredProducts = () => {
+    let filtered = [...sponsoredProducts];
+
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (countryFilter !== "all") {
+      filtered = filtered.filter(product => product.seller_country === countryFilter);
+    }
+
+    return filtered;
+  };
+
+  const filteredSponsored = getFilteredSponsoredProducts();
 
   return (
     <div className="min-h-screen bg-background">
@@ -206,7 +284,7 @@ const Marketplace = () => {
           <div className="text-center py-12">
             <p className="text-muted-foreground">Loading products...</p>
           </div>
-        ) : filteredProducts.length === 0 ? (
+        ) : filteredProducts.length === 0 && filteredSponsored.length === 0 ? (
           <div className="text-center py-16">
             {searchQuery ? (
               <>
@@ -221,6 +299,24 @@ const Marketplace = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {/* Sponsored products first */}
+            {filteredSponsored.map((product) => (
+              <ProductCard
+                key={`sponsored-${product.id}`}
+                id={product.id}
+                name={product.name}
+                description={product.description || ""}
+                price={product.price}
+                imageUrl={product.image_url || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e"}
+                buyerName={product.buyer_name}
+                buyerPlace={product.buyer_place}
+                currency={product.currency}
+                isSponsored={true}
+                onImpression={() => trackImpression(product.campaignId)}
+                onClickTrack={() => trackClick(product.campaignId)}
+              />
+            ))}
+            {/* Regular products */}
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
