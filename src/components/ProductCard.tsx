@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { PriceDisplay } from "@/components/PriceDisplay";
-import { Star } from "lucide-react";
+import { Star, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductCardProps {
   id: string;
@@ -15,9 +16,24 @@ interface ProductCardProps {
   buyerName?: string | null;
   buyerPlace?: string | null;
   currency?: string;
+  isSponsored?: boolean;
+  onImpression?: () => void;
+  onClickTrack?: () => void;
 }
 
-export const ProductCard = ({ id, name, description, price, imageUrl, buyerName, buyerPlace, currency = 'USD' }: ProductCardProps) => {
+export const ProductCard = ({ 
+  id, 
+  name, 
+  description, 
+  price, 
+  imageUrl, 
+  buyerName, 
+  buyerPlace, 
+  currency = 'USD',
+  isSponsored = false,
+  onImpression,
+  onClickTrack
+}: ProductCardProps) => {
   const navigate = useNavigate();
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop";
   const [averageRating, setAverageRating] = useState<number | null>(null);
@@ -25,7 +41,11 @@ export const ProductCard = ({ id, name, description, price, imageUrl, buyerName,
 
   useEffect(() => {
     fetchRating();
-  }, [id]);
+    // Track impression when card is rendered
+    if (isSponsored && onImpression) {
+      onImpression();
+    }
+  }, [id, isSponsored]);
 
   const fetchRating = async () => {
     try {
@@ -45,12 +65,25 @@ export const ProductCard = ({ id, name, description, price, imageUrl, buyerName,
       console.error("Error fetching rating:", error);
     }
   };
+
+  const handleClick = () => {
+    if (isSponsored && onClickTrack) {
+      onClickTrack();
+    }
+    navigate(`/product/${id}`);
+  };
   
   return (
     <Card 
-      className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group"
-      onClick={() => navigate(`/product/${id}`)}
+      className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group relative"
+      onClick={handleClick}
     >
+      {isSponsored && (
+        <Badge className="absolute top-2 left-2 z-10 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-md">
+          <Sparkles className="h-3 w-3 mr-1" />
+          Sponsored
+        </Badge>
+      )}
       <div className="aspect-square overflow-hidden bg-muted relative">
         <img
           src={imageUrl || fallbackImage}

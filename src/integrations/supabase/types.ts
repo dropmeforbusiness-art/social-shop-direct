@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_campaigns: {
+        Row: {
+          clicks: number
+          created_at: string
+          daily_rate: number
+          end_date: string
+          id: string
+          impressions: number
+          product_id: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          seller_id: string
+          start_date: string
+          status: string
+          total_budget: number
+          total_spent: number
+          updated_at: string
+        }
+        Insert: {
+          clicks?: number
+          created_at?: string
+          daily_rate?: number
+          end_date: string
+          id?: string
+          impressions?: number
+          product_id: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          seller_id: string
+          start_date: string
+          status?: string
+          total_budget: number
+          total_spent?: number
+          updated_at?: string
+        }
+        Update: {
+          clicks?: number
+          created_at?: string
+          daily_rate?: number
+          end_date?: string
+          id?: string
+          impressions?: number
+          product_id?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          seller_id?: string
+          start_date?: string
+          status?: string
+          total_budget?: number
+          total_spent?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_campaigns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyer_profiles: {
         Row: {
           created_at: string
