@@ -3,17 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MessageCircle, CreditCard, Truck, MapPin } from "lucide-react";
+import { ArrowLeft, MessageCircle, CreditCard, MapPin } from "lucide-react";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ReviewsList } from "@/components/ReviewsList";
 import { Separator } from "@/components/ui/separator";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { PurchaseSuccessModal } from "@/components/PurchaseSuccessModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ChatButton } from "@/components/chat/ChatButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 
@@ -37,11 +32,6 @@ interface Product {
   status: string;
   currency: string;
   user_id: string;
-  shipping_method: string | null;
-  seller_address: string | null;
-  seller_pincode: string | null;
-  seller_city: string | null;
-  seller_state: string | null;
 }
 
 const ProductDetail = () => {
@@ -54,16 +44,6 @@ const ProductDetail = () => {
   const [reviewsRefreshTrigger, setReviewsRefreshTrigger] = useState(0);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [purchaseAmount, setPurchaseAmount] = useState(0);
-  const [showShippingDialog, setShowShippingDialog] = useState(false);
-  const [selectedShipping, setSelectedShipping] = useState<"pickup" | "delivery">("pickup");
-  const [deliveryAddress, setDeliveryAddress] = useState({
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-  });
-  const [shippingCost, setShippingCost] = useState<number | null>(null);
-  const [checkingShipping, setCheckingShipping] = useState(false);
   const [sellerUserId, setSellerUserId] = useState<string | null>(null);
 
   const fallbackImage = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop";
@@ -134,72 +114,6 @@ const ProductDetail = () => {
 
   const handleBuyClick = () => {
     if (!product) return;
-    
-    // If seller offers shiprocket, show shipping dialog
-    if (product.shipping_method === "shiprocket") {
-      setShowShippingDialog(true);
-    } else {
-      // Direct pickup, proceed to payment
-      setSelectedShipping("pickup");
-      handleRazorpayPayment();
-    }
-  };
-
-  const checkShippingCost = async () => {
-    if (!product || !deliveryAddress.pincode) return;
-    
-    setCheckingShipping(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('shiprocket-service', {
-        body: {
-          action: 'check_serviceability',
-          pickupPincode: product.seller_pincode || '400001',
-          deliveryPincode: deliveryAddress.pincode,
-          weight: 1, // Default weight in kg
-          cod: 0,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.data?.available_courier_companies?.length > 0) {
-        const cheapestCourier = data.data.available_courier_companies.reduce((min: any, courier: any) => 
-          courier.rate < min.rate ? courier : min
-        );
-        setShippingCost(cheapestCourier.rate);
-      } else {
-        toast({
-          title: "Delivery not available",
-          description: "Shiprocket delivery is not available for this pincode",
-          variant: "destructive",
-        });
-        setShippingCost(null);
-      }
-    } catch (error: any) {
-      console.error('Shipping check error:', error);
-      toast({
-        title: "Error checking shipping",
-        description: "Unable to calculate shipping cost. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setCheckingShipping(false);
-    }
-  };
-
-  const handleShippingConfirm = () => {
-    // Validate delivery address if delivery is selected
-    if (selectedShipping === "delivery") {
-      if (!deliveryAddress.address || !deliveryAddress.city || !deliveryAddress.state || !deliveryAddress.pincode) {
-        toast({
-          title: "Missing information",
-          description: "Please fill in all delivery address fields",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-    setShowShippingDialog(false);
     handleRazorpayPayment();
   };
 
@@ -277,7 +191,7 @@ const ProductDetail = () => {
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session && product) {
-              const { data: orderData, error: orderError } = await supabase
+              const { error: orderError } = await supabase
                 .from("orders")
                 .insert({
                   product_id: product.id,
@@ -291,76 +205,11 @@ const ProductDetail = () => {
                   status: 'completed',
                   buyer_name: session.user.email,
                   buyer_email: session.user.email,
-                  shipping_method: selectedShipping,
-                  delivery_address: selectedShipping === "delivery" ? deliveryAddress.address : null,
-                  delivery_city: selectedShipping === "delivery" ? deliveryAddress.city : null,
-                  delivery_state: selectedShipping === "delivery" ? deliveryAddress.state : null,
-                  delivery_pincode: selectedShipping === "delivery" ? deliveryAddress.pincode : null,
-                })
-                .select()
-                .single();
+                  shipping_method: 'pickup',
+                });
 
               if (orderError) {
                 console.error('Error creating order:', orderError);
-              }
-
-              // Create Shiprocket order if delivery is selected
-              if (selectedShipping === "delivery" && orderData && product.seller_pincode) {
-                try {
-                  const shiprocketOrderData = {
-                    order_id: orderData.id,
-                    order_date: new Date().toISOString().split('T')[0],
-                    pickup_location: product.seller_location || "Seller Location",
-                    billing_customer_name: session.user.email?.split('@')[0] || "Customer",
-                    billing_last_name: "",
-                    billing_address: deliveryAddress.address,
-                    billing_city: deliveryAddress.city,
-                    billing_pincode: deliveryAddress.pincode,
-                    billing_state: deliveryAddress.state,
-                    billing_country: "India",
-                    billing_email: session.user.email || "",
-                    billing_phone: session.user.phone || "9999999999",
-                    shipping_is_billing: true,
-                    order_items: [{
-                      name: product.name,
-                      sku: product.id,
-                      units: 1,
-                      selling_price: priceInINR,
-                    }],
-                    payment_method: "Prepaid",
-                    sub_total: priceInINR,
-                    length: 10,
-                    breadth: 10,
-                    height: 10,
-                    weight: 1,
-                  };
-
-                  const { data: shiprocketData, error: shiprocketError } = await supabase.functions.invoke('shiprocket-service', {
-                    body: {
-                      action: 'create_order',
-                      orderData: shiprocketOrderData,
-                    },
-                  });
-
-                  if (!shiprocketError && shiprocketData) {
-                    // Update order with Shiprocket details
-                    await supabase
-                      .from("orders")
-                      .update({
-                        shiprocket_order_id: shiprocketData.order_id?.toString(),
-                        shiprocket_shipment_id: shiprocketData.shipment_id?.toString(),
-                        awb_code: shiprocketData.awb_code,
-                        courier_name: shiprocketData.courier_name,
-                      })
-                      .eq("id", orderData.id);
-
-                    console.log('Shiprocket order created:', shiprocketData);
-                  } else {
-                    console.error('Shiprocket order creation failed:', shiprocketError);
-                  }
-                } catch (shiprocketErr) {
-                  console.error('Shiprocket error:', shiprocketErr);
-                }
               }
 
               // Update product status to sold
@@ -544,29 +393,18 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Shipping Information */}
-            {product.shipping_method && (
+            {/* Pickup Information */}
+            {product.seller_location && (
               <div className="mb-6 p-4 bg-accent/10 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
-                  <Truck className="h-5 w-5 text-foreground" />
+                  <MapPin className="h-5 w-5 text-foreground" />
                   <p className="text-sm font-semibold text-foreground">
-                    Shipping Options
+                    Pickup Location
                   </p>
                 </div>
-                {product.shipping_method === "pickup" ? (
-                  <p className="text-sm text-muted-foreground">
-                    Pickup from seller's location
-                  </p>
-                ) : (
-                  <>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      • Pickup from seller
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      • Delivery via Shiprocket
-                    </p>
-                  </>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  Collect from seller's location: {product.seller_location}
+                </p>
               </div>
             )}
 
@@ -630,124 +468,6 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Shipping Selection Dialog */}
-        <Dialog open={showShippingDialog} onOpenChange={setShowShippingDialog}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Choose Shipping Method</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <RadioGroup value={selectedShipping} onValueChange={(value: "pickup" | "delivery") => setSelectedShipping(value)}>
-                <div className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                  <RadioGroupItem value="pickup" id="pickup" />
-                  <div className="flex-1">
-                    <Label htmlFor="pickup" className="cursor-pointer font-semibold flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      Pickup from Seller
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Free - Collect from seller's location
-                    </p>
-                    {product?.seller_location && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Location: {product.seller_location}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                  <RadioGroupItem value="delivery" id="delivery" />
-                  <div className="flex-1">
-                    <Label htmlFor="delivery" className="cursor-pointer font-semibold flex items-center gap-2">
-                      <Truck className="h-4 w-4" />
-                      Delivery via Shiprocket
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Get it delivered to your address
-                    </p>
-                  </div>
-                </div>
-              </RadioGroup>
-
-              {selectedShipping === "delivery" && (
-                <div className="space-y-4 p-4 bg-accent/10 rounded-lg">
-                  <h3 className="font-semibold">Delivery Address</h3>
-                  
-                  <div>
-                    <Label htmlFor="address">Full Address *</Label>
-                    <Textarea
-                      id="address"
-                      value={deliveryAddress.address}
-                      onChange={(e) => setDeliveryAddress({ ...deliveryAddress, address: e.target.value })}
-                      placeholder="House no., Street, Area"
-                      rows={2}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="city">City *</Label>
-                      <Input
-                        id="city"
-                        value={deliveryAddress.city}
-                        onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}
-                        placeholder="Mumbai"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="state">State *</Label>
-                      <Input
-                        id="state"
-                        value={deliveryAddress.state}
-                        onChange={(e) => setDeliveryAddress({ ...deliveryAddress, state: e.target.value })}
-                        placeholder="Maharashtra"
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="pincode">Pincode *</Label>
-                    <Input
-                      id="pincode"
-                      value={deliveryAddress.pincode}
-                      onChange={(e) => {
-                        setDeliveryAddress({ ...deliveryAddress, pincode: e.target.value });
-                        setShippingCost(null);
-                      }}
-                      placeholder="400001"
-                      className="mt-1"
-                      onBlur={checkShippingCost}
-                    />
-                  </div>
-
-                  {checkingShipping && (
-                    <p className="text-sm text-muted-foreground">Calculating shipping cost...</p>
-                  )}
-
-                  {shippingCost !== null && (
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <p className="text-sm font-semibold">Estimated Shipping Cost: ₹{shippingCost.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground mt-1">This will be added to your total</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button onClick={handleShippingConfirm} className="flex-1">
-                  Continue to Payment
-                </Button>
-                <Button variant="outline" onClick={() => setShowShippingDialog(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Purchase Success Modal */}
         {product && (
