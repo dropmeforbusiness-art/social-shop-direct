@@ -8,7 +8,7 @@ function Hero() {
   const navigate = useNavigate();
   const [titleNumber, setTitleNumber] = useState(0);
   const titles = useMemo(
-    () => ["amazing", "new", "wonderful", "beautiful", "smart"],
+    () => ["easy", "fast", "simple", "effortless", "instant"],
     []
   );
 
@@ -34,7 +34,7 @@ function Hero() {
           </div>
           <div className="flex gap-3 sm:gap-4 flex-col">
             <h1 className="text-3xl sm:text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-regular px-4">
-              <span className="text-spektr-cyan-50">This is something</span>
+              <span className="text-spektr-cyan-50">Selling made</span>
               <span className="relative flex w-full justify-center overflow-hidden text-center pb-2 pt-1 sm:md:pb-4 sm:md:pt-1">
                 &nbsp;
                 {titles.map((title, index) => (
