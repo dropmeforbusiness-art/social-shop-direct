@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
@@ -21,18 +22,22 @@ export const ChatButton = ({
   userType,
   variant = "icon",
 }: ChatButtonProps) => {
+  const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
   const [showList, setShowList] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [otherUserName, setOtherUserName] = useState("");
 
   useEffect(() => {
     const getUser = async () => {
+      setIsLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setCurrentUserId(user.id);
       }
+      setIsLoading(false);
     };
     getUser();
   }, []);
@@ -40,6 +45,7 @@ export const ChatButton = ({
   const startConversation = async () => {
     if (!currentUserId) {
       toast.error("Please log in to send messages");
+      navigate("/buyer/login");
       return;
     }
 
@@ -107,7 +113,8 @@ export const ChatButton = ({
     setShowList(false);
   };
 
-  if (!currentUserId) return null;
+  // Show button even when not logged in - clicking will redirect to login
+  if (isLoading) return null;
 
   return (
     <>
