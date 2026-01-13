@@ -11,6 +11,7 @@ import { Pencil, Trash2, Image as ImageIcon, LogOut, Loader2, MessageCircle } fr
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChatButton } from "@/components/chat/ChatButton";
+import AdCampaignManager from "@/components/ads/AdCampaignManager";
 
 interface Product {
   id: string;
@@ -37,6 +38,7 @@ interface Order {
 }
 
 const SellerDashboard = () => {
+  const [sellerId, setSellerId] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +65,8 @@ const SellerDashboard = () => {
       navigate("/seller/login");
       return;
     }
+
+    setSellerId(session.user.id);
 
     // Get seller phone
     const { data: profile } = await supabase
@@ -396,6 +400,16 @@ const SellerDashboard = () => {
                 </Card>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Ad Campaigns Section */}
+        <div className="mt-12">
+          {sellerId && (
+            <AdCampaignManager 
+              products={products} 
+              sellerId={sellerId} 
+            />
           )}
         </div>
       </main>
