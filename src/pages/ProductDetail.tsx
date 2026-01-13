@@ -76,7 +76,7 @@ const ProductDetail = () => {
 
       setProduct(data);
 
-      // Fetch seller's user_id from seller_profiles using seller_phone
+      // Use product's user_id as the seller ID, or try to get it from seller_profiles
       if (data.seller_phone) {
         const { data: sellerProfile } = await supabase
           .from("seller_profiles")
@@ -86,7 +86,13 @@ const ProductDetail = () => {
 
         if (sellerProfile) {
           setSellerUserId(sellerProfile.user_id);
+        } else {
+          // Fallback to product's user_id
+          setSellerUserId(data.user_id);
         }
+      } else {
+        // If no seller_phone, use product's user_id
+        setSellerUserId(data.user_id);
       }
     } catch (error: any) {
       toast({
@@ -444,6 +450,13 @@ const ProductDetail = () => {
                   />
                 )}
               </div>
+              
+              {/* Show login prompt if no sellerUserId and product not sold */}
+              {product.status !== "sold" && !sellerUserId && (
+                <p className="text-sm text-muted-foreground text-center mt-2">
+                  Login to message the seller
+                </p>
+              )}
             </div>
           </div>
         </div>
