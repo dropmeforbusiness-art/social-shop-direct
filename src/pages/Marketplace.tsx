@@ -122,7 +122,19 @@ const Marketplace = () => {
 
   const trackImpression = useCallback(async (campaignId: string) => {
     try {
-      await supabase.rpc('increment_campaign_impressions', { campaign_id: campaignId });
+      // Get current impressions and increment
+      const { data: campaign } = await supabase
+        .from('ad_campaigns')
+        .select('impressions')
+        .eq('id', campaignId)
+        .single();
+      
+      if (campaign) {
+        await supabase
+          .from('ad_campaigns')
+          .update({ impressions: (campaign.impressions || 0) + 1 })
+          .eq('id', campaignId);
+      }
     } catch (error) {
       // Silently fail - don't interrupt user experience
       console.error("Failed to track impression:", error);
@@ -131,7 +143,19 @@ const Marketplace = () => {
 
   const trackClick = useCallback(async (campaignId: string) => {
     try {
-      await supabase.rpc('increment_campaign_clicks', { campaign_id: campaignId });
+      // Get current clicks and increment
+      const { data: campaign } = await supabase
+        .from('ad_campaigns')
+        .select('clicks')
+        .eq('id', campaignId)
+        .single();
+      
+      if (campaign) {
+        await supabase
+          .from('ad_campaigns')
+          .update({ clicks: (campaign.clicks || 0) + 1 })
+          .eq('id', campaignId);
+      }
     } catch (error) {
       console.error("Failed to track click:", error);
     }
