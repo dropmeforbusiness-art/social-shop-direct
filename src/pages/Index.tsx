@@ -4,6 +4,7 @@ import { QASection } from "@/components/QASection";
 import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { UserMenu } from "@/components/UserMenu";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -16,10 +17,11 @@ const Index = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-foreground cursor-pointer" onClick={() => navigate("/")}>
               Flipp.
             </h1>
-            <nav className="flex gap-3 sm:gap-6">
-              <Button variant="ghost" size="sm" className="sm:size-default" onClick={() => navigate("/marketplace")}>
+            <nav className="flex items-center gap-3 sm:gap-4">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/marketplace")}>
                 Buy
               </Button>
+              <UserMenu />
             </nav>
           </div>
         </div>

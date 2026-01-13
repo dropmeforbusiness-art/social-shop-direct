@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter } from "lucide-react";
 import { CountrySelector } from "@/components/CountrySelector";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { UserMenu } from "@/components/UserMenu";
 
 interface Product {
   id: string;
@@ -233,11 +234,9 @@ const Marketplace = () => {
             <h1 className="text-2xl font-bold text-foreground cursor-pointer" onClick={() => navigate("/")}>
               Flipp.
             </h1>
-            <nav className="flex items-center gap-4">
+            <nav className="flex items-center gap-3 sm:gap-4">
               <CountrySelector />
-              <Button variant="ghost" onClick={() => navigate("/")}>
-                Sell
-              </Button>
+              <UserMenu />
             </nav>
           </div>
         </div>
